@@ -1,0 +1,11 @@
+[run]
+source = users/
+omit = */__init__.py, users/app.py
+
+[report]
+fail_under=90
+exclude_lines =
+    if __name__ == .__main__.:
+omit =
+    venv/
+    **/virtualenv/**
