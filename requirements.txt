@@ -1,3 +1,7 @@
+dnspython==2.0.0
+ibm_cos_sdk_core==2.7.0
+ibm_cos_sdk==2.7.0
 cheroot==6.5.6
 Flask_RESTful==0.3.7
 Flask==1.1.1
+pymongo==3.11.0

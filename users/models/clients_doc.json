@@ -1,0 +1,22 @@
+{
+    "username": "must be unique",
+    "name": "John Doe",
+    "email": "johndoe@server.com",
+    "address": "00000-000",
+    "cpf": "000.000.000-00",
+    "phone_number": "11988884444",
+    "pets": {
+        "pet_name1": {
+            "species": "dog",
+            "breed": "labrador",
+            "age_years": "10",
+            "weight_kilos": "12"
+        },
+        "pet_name2": {
+            "species": "cat",
+            "breed": "persa",
+            "age_years": "5",
+            "weight_kilos": "7"
+        }
+    }
+}
