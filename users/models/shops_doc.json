@@ -1,5 +1,6 @@
 {
     "username": "must be unique",
+    "password": "first 6 digits of cnpj field",
     "name": "PetX - O melhor para o seu pet!",
     "pics": {
         "profile": "an url from our storage db",
@@ -9,16 +10,18 @@
     "address": "00000-000",
     "cnpj": "00.000.000/0001-00",
     "phone_number": "11 38965749",
-    "desc": "LOREM IPSUM",
+    "description": "LOREM IPSUM",
     "hours": "08:00-22:00",
     "services": [
         {
             "service_name": "some name",
-            "service_id": "service id on services collection"
+            "service_id": "service id on services collection",
+            "price": "R$19,99"
         },
         {
             "service_name": "some other name",
-            "service_id": "service id on services collection"
+            "service_id": "service id on services collection",
+            "price": "R$39,99"
         }
     ]
 }

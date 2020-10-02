@@ -1,5 +1,6 @@
 {
     "username": "must be unique",
+    "password": "first 6 digits of cpf field",
     "name": "John Doe",
     "email": "johndoe@server.com",
     "address": "00000-000",
