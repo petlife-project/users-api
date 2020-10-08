@@ -1,11 +1,11 @@
 from flask_restful import abort
 from flask.json import jsonify
 
-from validate_docbr import CPF
+from validate_docbr import CNPJ, CPF
 
 from users.api.body_parsers.factory import BodyParserFactory
 from users.utils.db.adapter_factory import get_mongo_adapter
-from users.utils.env_vars import CLIENTS_COLLECTION
+from users.utils.env_vars import CLIENTS_COLLECTION, SHOPS_COLLECTION
 
 
 class RegistrationService:
@@ -13,7 +13,8 @@ class RegistrationService:
     """
     def __init__(self):
         self.types = {
-            'client': self._register_client
+            'client': self._register_client,
+            'shop': self._register_shop
         }
         self.parser_factory = BodyParserFactory()
 
@@ -53,6 +54,28 @@ class RegistrationService:
         self._insert_in_mongo(collection, doc)
         return jsonify(doc)
 
+    def _register_shop(self):
+        """ Registers petshops into their collection
+
+            Args:
+                The user object fields are parsed from
+                the request's body, they can be found in
+                the shop model in this API's models directory
+
+            Returns:
+                New user document just inserted in the collection
+
+            Raises:
+                HttpException: 409 Conflict, if user already exists
+        """
+        collection = SHOPS_COLLECTION
+        parser = self.parser_factory.get_parser('shop_registration')
+
+        doc = parser.fields
+        self._validate_cnpj(doc['cnpj'])
+        self._insert_in_mongo(collection, doc)
+        return jsonify(doc)
+
     @staticmethod
     def _insert_in_mongo(collection, doc):
         mongo = get_mongo_adapter()
@@ -68,3 +91,11 @@ class RegistrationService:
         if valid:
             return
         abort(400, extra='Invalid CPF')
+
+    @staticmethod
+    def _validate_cnpj(cnpj):
+        validator = CNPJ()
+        valid = validator.validate(cnpj)
+        if valid:
+            return
+        abort(400, extra='Invalid CNPJ')
