@@ -3,6 +3,7 @@ import os
 
 # MongoDB
 MONGO_CONNECTION_STRING = str(os.environ.get('MONGO_CONNECTION_STRING'))
+CLIENTS_COLLECTION = str(os.environ.get('MONGO_CLIENTS_COLLECTION'))
 
 # COS
 COS_API_KEY = str(os.environ.get('COS_API_KEY'))
