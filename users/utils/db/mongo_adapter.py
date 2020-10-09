@@ -82,6 +82,21 @@ class MongoAdapter:
             print(f'Error when performing deletion on MongoDB: {error}')
             raise RuntimeError from error
 
+    def get_user_information(self, collection, username):
+        """ Search for an specific user by username
+
+            Args:
+                collection (str): The collection to be searched on
+                username (str): The username to search
+
+            Returns:
+                user_obejct (dict): The whole user object stored in MongoDB
+        """
+        query = {'username': username}
+        result_list = self._find(collection, query)
+        user_object = result_list.pop()
+        return user_object
+
     def _find(self, collection, query):
         """ Generic method for performing searches
 

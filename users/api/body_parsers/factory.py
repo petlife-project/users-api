@@ -33,3 +33,6 @@ class BodyParserFactory:
                 BodyParser: Instance of body parser according to set type
         """
         return self.types[type_]()
+
+
+FACTORY = BodyParserFactory()

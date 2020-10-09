@@ -163,3 +163,23 @@ class MongoAdapterTestCase(unittest.TestCase):
         self.assertEqual(results, [
             {'ketchup': 1}, {'mostarda': 2}, {'maionese': 3}
         ])
+
+    def test_get_user_information_returns_user_object(self):
+        # Setup
+        mock_self = MagicMock()
+        collection = 'test_col'
+        username = 'hendrix'
+        mock_self._find.return_value = [
+            'complete_user_object'
+        ]
+
+        # Act
+        user = MongoAdapter.get_user_information(
+            mock_self, collection, username
+        )
+
+        # Assert
+        mock_self._find.assert_called_with(
+            'test_col', {'username': 'hendrix'}
+        )
+        self.assertEqual(user, 'complete_user_object')
