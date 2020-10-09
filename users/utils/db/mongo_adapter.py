@@ -82,6 +82,27 @@ class MongoAdapter:
             print(f'Error when performing deletion on MongoDB: {error}')
             raise RuntimeError from error
 
+    def get_user_information(self, collection, username, password):
+        """ Search for an specific user by username and password
+
+            Args:
+                collection (str): The collection to be searched on
+                username (str): The username to search
+                password (str): Must be exact match
+
+            Returns:
+                user_obejct (dict): The whole user object stored in MongoDB
+        """
+        query = {'username': username, 'password': password}
+        result_list = self._find(collection, query)
+        try:
+            user = result_list.pop()
+            del user['password']
+            return user
+
+        except IndexError as error:
+            raise KeyError('Invalid user information') from error
+
     def _find(self, collection, query):
         """ Generic method for performing searches
 
