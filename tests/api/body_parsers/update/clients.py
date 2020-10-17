@@ -20,5 +20,6 @@ class ClientUpdateParserTestCase(unittest.TestCase):
 
         # Assert
         self.assertEqual(mock_self._additional_fields, [
-            {'name': 'pets', 'type': str, 'location': 'form', 'required': False}
+            {'name': 'pets', 'type': str,
+                'location': 'form', 'required': False, 'store_missing': False}
         ])

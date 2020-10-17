@@ -7,6 +7,7 @@ class ClientRegParser(BaseRegParser):
 
     def __init__(self):
         self._additional_fields.extend([
-            {'name': 'cpf', 'type': str, 'location': 'form', 'required': False}
+            {'name': 'cpf', 'type': str,
+                'location': 'form', 'required': False, 'store_missing': False}
         ])
         super().__init__()

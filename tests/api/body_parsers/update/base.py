@@ -20,8 +20,12 @@ class BaseUpdateParserTestCase(unittest.TestCase):
 
         # Assert
         self.assertEqual(mock_self._additional_fields, [
-            {'name': 'name', 'type': str, 'location': 'form', 'required': False},
-            {'name': 'email', 'type': str, 'location': 'form', 'required': False},
-            {'name': 'address', 'type': str, 'location': 'form', 'required': False},
-            {'name': 'phone_number', 'type': str, 'location': 'form', 'required': False}
+            {'name': 'name', 'type': str,
+                'location': 'form', 'required': False, 'store_missing': False},
+            {'name': 'email', 'type': str,
+                'location': 'form', 'required': False, 'store_missing': False},
+            {'name': 'address', 'type': str,
+                'location': 'form', 'required': False, 'store_missing': False},
+            {'name': 'phone_number', 'type': str,
+                'location': 'form', 'required': False, 'store_missing': False}
         ])

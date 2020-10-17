@@ -7,9 +7,13 @@ class BaseUpdateParser(BaseParser):
 
     def __init__(self):
         self._additional_fields.extend([
-            {'name': 'name', 'type': str, 'location': 'form', 'required': False},
-            {'name': 'email', 'type': str, 'location': 'form', 'required': False},
-            {'name': 'address', 'type': str, 'location': 'form', 'required': False},
-            {'name': 'phone_number', 'type': str, 'location': 'form', 'required': False}
+            {'name': 'name', 'type': str,
+                'location': 'form', 'required': False, 'store_missing': False},
+            {'name': 'email', 'type': str,
+                'location': 'form', 'required': False, 'store_missing': False},
+            {'name': 'address', 'type': str,
+                'location': 'form', 'required': False, 'store_missing': False},
+            {'name': 'phone_number', 'type': str,
+                'location': 'form', 'required': False, 'store_missing': False}
         ])
         super().__init__()
