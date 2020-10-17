@@ -37,7 +37,7 @@ class MongoAdapter:
         except DuplicateKeyError as error:
             raise KeyError(f'User {username} already exists in {collection}') from error
 
-    def update(self, filter_, collection, doc):
+    def update(self, collection, doc):
         """ Finds and updates a document in a collection
 
             Args:
@@ -51,6 +51,7 @@ class MongoAdapter:
             Returns:
                 Operation's acknowledgement (bool)
         """
+        filter_ = {'username': doc['username'], 'password': doc['password']}
         try:
             operation = self.db_[collection].update_one(filter_, {'$set': doc})
             if operation.matched_count == 0:
