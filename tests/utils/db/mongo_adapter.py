@@ -75,31 +75,54 @@ class MongoAdapterTestCase(unittest.TestCase):
         with self.assertRaises(KeyError):
             MongoAdapter.create(mock_self, collection, doc)
 
-    def test_update_successful_run_updated_document(self):
+    @staticmethod
+    def test_update_successful_run_updated_document():
         # Setup
         mock_self = MagicMock()
         collection = 'test'
         doc = {
             'username': 'unique_user',
+            'password': 'ape',
             'test_field': 'new_value'
         }
         mock_self.db_['test'].update_one.return_value = MagicMock(
-            acknowledged=True
+            matched_count=1
         )
 
         # Act
-        updated = MongoAdapter.update(mock_self, collection, doc)
+        MongoAdapter.update(mock_self, collection, doc)
 
         # Assert
         mock_self.db_['test'].update_one.assert_called_with(
-            {'username': 'unique_user'},
+            {'username': 'unique_user', 'password': 'ape'},
             {'$set': {
                 'username': 'unique_user',
+                'password': 'ape',
                 'test_field': 'new_value'
             }
         }
         )
-        self.assertTrue(updated)
+        mock_self.get_user_information.assert_called_with(
+            'test', 'unique_user', 'ape'
+        )
+
+    def test_update_no_match_raises_key_error(self):
+        # Setup
+        mock_self = MagicMock()
+        collection = 'test'
+        doc = {
+            'username': 'missingno',
+            'password': '?',
+            'test_field': 'new_value'
+        }
+        mock_self.db_['test'].update_one.return_value = MagicMock(
+            matched_count=0
+        )
+
+        # Act & Assert
+        with self.assertRaises(KeyError):
+            MongoAdapter.update(mock_self, collection, doc)
+            mock_self.get_user_information.assert_not_called_with()
 
     def test_update_except_pymongoerror(self):
         # Setup
@@ -107,6 +130,7 @@ class MongoAdapterTestCase(unittest.TestCase):
         collection = 'test'
         doc = {
             'username': 'unique_user',
+            'password': 'ape',
             'test_field': 'new_value'
         }
         mock_self.db_['test'].update_one.side_effect = PyMongoError

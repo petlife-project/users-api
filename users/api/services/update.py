@@ -1,23 +1,16 @@
-import re
 import json
 
 from flask_restful import abort
 from flask.json import jsonify
 
-from users.api.body_parsers.factory import FACTORY
 from users.utils.db.adapter_factory import get_mongo_adapter, get_cos_adapter
-from users.utils.env_vars import CLIENTS_COLLECTION, SHOPS_COLLECTION
+from users.api.services.data_input import DataInputService
 
 
-class UpdateService:
+class UpdateService(DataInputService):
     """ Service for users to add and/or change their information
     """
     def __init__(self):
-        self.parser_factory = FACTORY
-        self.types = {
-            'client': CLIENTS_COLLECTION,
-            'shop': SHOPS_COLLECTION
-        }
         self.validations = {
             'email': self._validate_email,
             'pets': self._validate_pets,
@@ -44,33 +37,21 @@ class UpdateService:
         collection = self.types[type_]
         parser = self.parser_factory.get_parser(f'{type_}_update')
         doc = parser.fields
-
-        for field in doc:
-            if field in self.validations.keys():
-                self.validations[field](doc)
-
+        self._validate_fields(doc)
         updated = self._update_in_mongo(collection, doc)
         return jsonify(updated)
 
     @staticmethod
     def _update_in_mongo(collection, doc):
         mongo = get_mongo_adapter()
-        filter_ = {'username': doc['username'], 'password': doc['password']}
         try:
-            return mongo.update(filter_, collection, doc)
+            return mongo.update(collection, doc)
 
         except KeyError as error:
             abort(400, extra='Incorrect username or password.')
 
         except RuntimeError as error:
             abort(500, extra=f'Error when updating, {error}')
-
-    @staticmethod
-    def _validate_email(doc):
-        email = doc['email']
-
-        if not re.match(r'\S+@\S+\.\S+', email):
-            abort(400, extra='Invalid email address!')
 
     @staticmethod
     def _validate_pets(doc):

@@ -28,90 +28,57 @@ class RegistrationServiceTestCase(unittest.TestCase):
         self.mocks['cnpj_mock'] = cnpj_patch.start()
         self.patches.append(cnpj_patch)
 
-        parser_factory_patch = patch('users.api.services.registration.FACTORY')
-        self.mocks['parser_factory_mock'] = parser_factory_patch.start()
-        self.patches.append(parser_factory_patch)
-
         mongo_patch = patch('users.api.services.registration.get_mongo_adapter')
         self.mocks['mongo_mock'] = mongo_patch.start()
         self.patches.append(mongo_patch)
 
-        clients_col_patch = patch('users.api.services.registration.CLIENTS_COLLECTION',
-                                  new='test_clients_col')
-        self.mocks['clients_col_mock'] = clients_col_patch.start()
-        self.patches.append(clients_col_patch)
-
-        shops_col_patch = patch('users.api.services.registration.SHOPS_COLLECTION',
-                                  new='test_shops_col')
-        self.mocks['shops_col_mock'] = shops_col_patch.start()
-        self.patches.append(shops_col_patch)
+        data_input_patch = patch('users.api.services.registration.DataInputService')
+        self.mocks['data_input_mock'] = data_input_patch.start()
+        self.patches.append(data_input_patch)
 
     def tearDown(self):
         for patch_ in self.patches:
             patch_.stop()
 
-    def test_init_creates_dict_and_parser_factory(self):
+    def test_init_sets_validations(self):
         # Setup
         mock_self = MagicMock(
-            _register_client='function1',
-            _register_shop='function2'
+            _validate_email='method1',
+            _validate_cpf='method2',
+            _validate_cnpj='method3'
         )
 
         # Act
         RegistrationService.__init__(mock_self)
 
         # Assert
-        self.assertDictEqual(mock_self.types,
-            {'client': 'function1', 'shop': 'function2'}
+        self.assertDictEqual(mock_self.validations, {
+            'email': 'method1',
+            'cpf': 'method2',
+            'cnpj': 'method3'
+        }
         )
-        mock_self.parser_factory = self.mocks['parser_factory_mock'].return_value
 
     @staticmethod
-    def test_register_returns_chosen_type_call():
+    def test_register_returns_new_user():
         # Setup
-        registration_method = MagicMock()
-        mock_self = MagicMock(types={'test_type': registration_method})
+        new_user = {
+            'new': 'user',
+            'right': 'here'
+        }
+        mock_self = MagicMock(types={'test_type': 'test_col'})
+        mock_self.parser_factory.get_parser.return_value = \
+            MagicMock(fields=new_user)
         type_ = 'test_type'
 
         # Act
         RegistrationService.register(mock_self, type_)
 
         # Assert
-        registration_method.assert_called()
-
-    def test_register_client_creates_user_with_cpf_returns_new_user(self):
-        # Setup
-        mock_self = MagicMock()
-        mock_self.parser_factory.get_parser.return_value = MagicMock(
-            fields={
-                'username': 'user123',
-                'cpf': '123'
-            }
-        )
-        self.mocks['jsonify_mock'].return_value = {
-            'ta': 'muito',
-            'calor': 'mano'
-        }
-
-        # Act
-        new_user = RegistrationService._register_client(mock_self)
-
-        # Assert
-        mock_self._validate_cpf.assert_called_with('123')
+        mock_self._validate_fields.assert_called_with(new_user)
         mock_self._insert_in_mongo.assert_called_with(
-            'test_clients_col', {
-                'username': 'user123',
-                'cpf': '123'
-            }
+            'test_col', new_user
         )
-        self.mocks['jsonify_mock'].assert_called_with({
-                'username': 'user123',
-                'cpf': '123'
-            })
-        self.assertDictEqual(new_user, {
-            'ta': 'muito',
-            'calor': 'mano'
-        })
 
     def test_insert_in_mongo_user_is_created(self):
         # Setup
@@ -144,12 +111,12 @@ class RegistrationServiceTestCase(unittest.TestCase):
 
     def test_validate_cpf_valid_returns_nothing(self):
         # Setup
-        cpf = '12345678912'
+        doc = {'cpf': '12345678912'}
         self.mocks['cpf_mock'].return_value.\
             validate.return_value = True
 
         # Act
-        RegistrationService._validate_cpf(cpf)
+        RegistrationService._validate_cpf(doc)
 
         # Assert
         self.mocks['cpf_mock'].return_value.\
@@ -159,59 +126,26 @@ class RegistrationServiceTestCase(unittest.TestCase):
 
     def test_validate_cpf_invalid_abort(self):
         # Setup
-        cpf = '12345678912'
+        doc = {'cpf': '12345678912'}
         self.mocks['cpf_mock'].return_value.\
             validate.return_value = False
         self.mocks['abort_mock'].side_effect = HTTPException
 
         # Act & Assert
         with self.assertRaises(HTTPException):
-            RegistrationService._validate_cpf(cpf)
+            RegistrationService._validate_cpf(doc)
             self.mocks['abort_mock'].assert_called_with(
                 400, extra='Invalid CPF'
             )
 
-    def test_register_shop_creates_client_returns_new_client(self):
-        # Setup
-        mock_self = MagicMock()
-        mock_self.parser_factory.get_parser.return_value = MagicMock(
-            fields={
-                'username': 'user123',
-                'cnpj': 'cnpj123'
-            }
-        )
-        self.mocks['jsonify_mock'].return_value = {
-            'hoje': 'ja',
-            'nao': 'ta',
-            'tanto': 'calor'
-        }
-
-        # Act
-        new_shop = RegistrationService._register_shop(mock_self)
-
-        # Assert
-        mock_self._validate_cnpj.assert_called_with('cnpj123')
-        mock_self._insert_in_mongo.assert_called_with(
-            'test_shops_col', {
-                'username': 'user123',
-                'cnpj': 'cnpj123'
-            }
-        )
-        self.assertDictEqual(new_shop, {
-            'hoje': 'ja',
-            'nao': 'ta',
-            'tanto': 'calor'
-            }
-        )
-
     def test_validate_cnpj_valid_returns_nothing(self):
         # Setup
-        cnpj = '12345678912'
+        doc = {'cnpj': '12345678912'}
         self.mocks['cnpj_mock'].return_value.\
             validate.return_value = True
 
         # Act
-        RegistrationService._validate_cnpj(cnpj)
+        RegistrationService._validate_cnpj(doc)
 
         # Assert
         self.mocks['cnpj_mock'].return_value.\
@@ -221,14 +155,14 @@ class RegistrationServiceTestCase(unittest.TestCase):
 
     def test_validate_cnpj_invalid_abort(self):
         # Setup
-        cnpj = '12345678912'
+        doc = {'cnpj': '12345678912'}
         self.mocks['cnpj_mock'].return_value.\
             validate.return_value = False
         self.mocks['abort_mock'].side_effect = HTTPException
 
         # Act & Assert
         with self.assertRaises(HTTPException):
-            RegistrationService._validate_cnpj(cnpj)
+            RegistrationService._validate_cnpj(doc)
             self.mocks['abort_mock'].assert_called_with(
                 400, extra='Invalid CNPJ'
             )
