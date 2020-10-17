@@ -3,8 +3,8 @@
     "password": "first 6 digits of cnpj field",
     "name": "PetX - O melhor para o seu pet!",
     "pics": {
-        "profile": "an url from our storage db",
-        "banner": "an url from our storage db"
+        "profile": "file id on cos",
+        "banner": "file id on cos"
     },
     "email": "contato@petz.com.br",
     "address": "00000-000",

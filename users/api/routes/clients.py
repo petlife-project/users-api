@@ -1,6 +1,7 @@
 from flask_restful import Resource
 
 from users.api.services.registration import RegistrationService
+from users.api.services.update import UpdateService
 
 
 class Clients(Resource):
@@ -13,4 +14,5 @@ class Clients(Resource):
 
     @staticmethod
     def put():
-        pass
+        service = UpdateService()
+        return service.update('client')
