@@ -9,10 +9,15 @@ class ShopUpdateParser(BaseUpdateParser):
 
     def __init__(self):
         self._additional_fields.extend([
-            {'name': 'services', 'type': str, 'location': 'form', 'required': False},
-            {'name': 'description', 'type': str, 'location': 'form', 'required': False},
-            {'name': 'hours', 'type': str, 'location': 'form', 'required': False},
-            {'name': 'profile_pic', 'type': FileStorage, 'location': 'files', 'required': False},
-            {'name': 'banner_pic', 'type': FileStorage, 'location': 'files', 'required': False}
+            {'name': 'services', 'type': str,
+                'location': 'form', 'required': False, 'store_missing': False},
+            {'name': 'description', 'type': str,
+                'location': 'form', 'required': False, 'store_missing': False},
+            {'name': 'hours', 'type': str,
+                'location': 'form', 'required': False, 'store_missing': False},
+            {'name': 'profile_pic', 'type': FileStorage,
+                'location': 'files', 'required': False, 'store_missing': False},
+            {'name': 'banner_pic', 'type': FileStorage,
+                'location': 'files', 'required': False, 'store_missing': False}
         ])
         super().__init__()

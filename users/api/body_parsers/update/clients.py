@@ -7,6 +7,7 @@ class ClientUpdateParser(BaseUpdateParser):
 
     def __init__(self):
         self._additional_fields.extend([
-            {'name': 'pets', 'type': str, 'location': 'form', 'required': False}
+            {'name': 'pets', 'type': str,
+                'location': 'form', 'required': False, 'store_missing': False}
         ])
         super().__init__()

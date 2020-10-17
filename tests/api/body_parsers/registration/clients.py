@@ -20,5 +20,6 @@ class ClientRegistrationParserTestCase(unittest.TestCase):
 
         # Assert
         self.assertEqual(mock_self._additional_fields, [
-            {'name': 'cpf', 'type': str, 'location': 'form', 'required': False}
+            {'name': 'cpf', 'type': str,
+                'location': 'form', 'required': False, 'store_missing': False}
         ])

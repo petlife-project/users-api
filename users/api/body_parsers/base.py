@@ -25,6 +25,7 @@ class BaseParser:
             parser.add_argument(**item)
 
         for item in self._additional_fields:
+            parser.remove_argument(item['name'])
             parser.add_argument(**item)
 
         return parser
