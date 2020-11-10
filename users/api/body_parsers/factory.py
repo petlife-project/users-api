@@ -1,8 +1,7 @@
-from users.api.body_parsers.auth import AuthParser
-from users.api.body_parsers.registration.clients import ClientRegParser
-from users.api.body_parsers.registration.shops import ShopRegParser
-from users.api.body_parsers.update.clients import ClientUpdateParser
-from users.api.body_parsers.update.shops import ShopUpdateParser
+from users.api.body_parsers.parser import BodyParser
+from users.api.body_parsers.fields import AUTH_FIELDS, \
+    CLIENTS_REGISTRATION_FIELDS, CLIENTS_UPDATE_FIELDS, \
+    SHOPS_REGISTRATION_FIELDS, SHOPS_UPDATE_FIELDS
 
 
 class BodyParserFactory:
@@ -11,11 +10,11 @@ class BodyParserFactory:
 
     def __init__(self):
         self.types = {
-            'auth': AuthParser,
-            'client_registration': ClientRegParser,
-            'shop_registration': ShopRegParser,
-            'client_update': ClientUpdateParser,
-            'shop_update': ShopUpdateParser
+            'auth': AUTH_FIELDS,
+            'client_registration': CLIENTS_REGISTRATION_FIELDS,
+            'shop_registration': SHOPS_REGISTRATION_FIELDS,
+            'client_update': CLIENTS_UPDATE_FIELDS,
+            'shop_update': SHOPS_UPDATE_FIELDS
         }
 
     def get_parser(self, type_):
@@ -32,7 +31,7 @@ class BodyParserFactory:
             Returns:
                 BodyParser: Instance of body parser according to set type
         """
-        return self.types[type_]()
+        return BodyParser(self.types[type_])
 
 
 FACTORY = BodyParserFactory()
