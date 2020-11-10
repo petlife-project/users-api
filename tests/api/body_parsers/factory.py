@@ -11,25 +11,39 @@ class BodyParserFactoryTestCase(unittest.TestCase):
         self.patches = []
         self.mocks = {}
 
-        auth_patch = patch('users.api.body_parsers.factory.AuthParser')
-        self.mocks['auth_mock'] = auth_patch.start()
-        self.patches.append(auth_patch)
+        parser_patch = patch('users.api.body_parsers.factory.BodyParser')
+        self.mocks['parser_mock'] = parser_patch.start()
+        self.patches.append(parser_patch)
 
-        client_reg_patch = patch('users.api.body_parsers.factory.ClientRegParser')
-        self.mocks['client_reg_mock'] = client_reg_patch.start()
-        self.patches.append(client_reg_patch)
+        auth_fields_patch = patch(
+            'users.api.body_parsers.factory.AUTH_FIELDS', new='auth fields'
+        )
+        self.mocks['auth_fields_mock'] = auth_fields_patch.start()
+        self.patches.append(auth_fields_patch)
 
-        shop_reg_patch = patch('users.api.body_parsers.factory.ShopRegParser')
-        self.mocks['shop_reg_mock'] = shop_reg_patch.start()
-        self.patches.append(shop_reg_patch)
+        clients_reg_fields_patch = patch(
+            'users.api.body_parsers.factory.CLIENTS_REGISTRATION_FIELDS', new='client reg fields'
+        )
+        self.mocks['clients_reg_fields_mock'] = clients_reg_fields_patch.start()
+        self.patches.append(clients_reg_fields_patch)
 
-        client_update_patch = patch('users.api.body_parsers.factory.ClientUpdateParser')
-        self.mocks['client_update_mock'] = client_update_patch.start()
-        self.patches.append(client_update_patch)
+        clients_up_fields_patch = patch(
+            'users.api.body_parsers.factory.CLIENTS_UPDATE_FIELDS', new='client up fields'
+        )
+        self.mocks['clients_up_fields_mock'] = clients_up_fields_patch.start()
+        self.patches.append(clients_up_fields_patch)
 
-        shop_update_patch = patch('users.api.body_parsers.factory.ShopUpdateParser')
-        self.mocks['shop_update_mock'] = shop_update_patch.start()
-        self.patches.append(shop_update_patch)
+        shops_reg_fields_patch = patch(
+            'users.api.body_parsers.factory.SHOPS_REGISTRATION_FIELDS', new='shops reg fields'
+        )
+        self.mocks['shops_reg_fields_mock'] = shops_reg_fields_patch.start()
+        self.patches.append(shops_reg_fields_patch)
+
+        shops_up_fields_patch = patch(
+            'users.api.body_parsers.factory.SHOPS_UPDATE_FIELDS', new='shops up fields'
+        )
+        self.mocks['shops_up_fields_mock'] = shops_up_fields_patch.start()
+        self.patches.append(shops_up_fields_patch)
 
     def tearDown(self):
         for patch_ in self.patches:
@@ -39,11 +53,11 @@ class BodyParserFactoryTestCase(unittest.TestCase):
         # Setup
         mock_self = MagicMock()
         expected = {
-            'auth': self.mocks['auth_mock'],
-            'client_registration': self.mocks['client_reg_mock'],
-            'shop_registration': self.mocks['shop_reg_mock'],
-            'client_update': self.mocks['client_update_mock'],
-            'shop_update': self.mocks['shop_update_mock']
+            'auth': 'auth fields',
+            'client_registration': 'client reg fields',
+            'shop_registration': 'shops reg fields',
+            'client_update': 'client up fields',
+            'shop_update': 'shops up fields'
         }
 
         # Act
@@ -55,11 +69,11 @@ class BodyParserFactoryTestCase(unittest.TestCase):
     def test_get_parser_return_instance_of_selected_parser(self):
         # Setup
         mock_self = MagicMock(types={
-            'auth': self.mocks['auth_mock'],
-            'client_registration': self.mocks['client_reg_mock'],
-            'shop_registration': self.mocks['shop_reg_mock'],
-            'client_update': self.mocks['client_update_mock'],
-            'shop_update': self.mocks['shop_update_mock']
+            'auth': self.mocks['auth_fields_mock'],
+            'client_registration': self.mocks['clients_reg_fields_mock'],
+            'shop_registration': self.mocks['shops_reg_fields_mock'],
+            'client_update': self.mocks['clients_up_fields_mock'],
+            'shop_update': self.mocks['shops_up_fields_mock']
         })
         type_ = 'auth'
 
@@ -67,4 +81,5 @@ class BodyParserFactoryTestCase(unittest.TestCase):
         parser = BodyParserFactory.get_parser(mock_self, type_)
 
         # Assert
-        self.assertEqual(parser, self.mocks['auth_mock'].return_value)
+        self.mocks['parser_mock'].assert_called_with(self.mocks['auth_fields_mock'])
+        self.assertEqual(parser, self.mocks['parser_mock'].return_value)
