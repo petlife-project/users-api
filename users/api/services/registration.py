@@ -30,6 +30,7 @@ class RegistrationService(DataInputService):
         parser = self.parser_factory.get_parser(f'{type_}_registration')
         doc = parser.fields
         self._validate_fields(doc)
+        self._create_array_fields(doc, type_)
         self._insert_in_mongo(collection, doc)
         return jsonify(doc)
 
@@ -40,6 +41,13 @@ class RegistrationService(DataInputService):
             mongo.create(collection, doc)
         except KeyError as error:
             abort(409, extra=f'{error}')
+
+    @staticmethod
+    def _create_array_fields(doc, type_):
+        if type_ == 'client':
+            doc['pets'] = []
+        if type_ == 'shop':
+            doc['services'] = []
 
     @staticmethod
     def _validate_cpf(doc):

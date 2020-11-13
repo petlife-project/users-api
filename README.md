@@ -61,20 +61,22 @@ Returns whole user object (except password)
     "address": "12345-022",
     "cpf": "000.000.000-00",
     "phone_number": "11988884444",
-    "pets": {
-        "pet_name1": {
+    "pets": [
+        {
+            "name": "Tchunay",
             "species": "dog",
             "breed": "labrador",
             "age_years": "10",
             "weight_kilos": "12"
         },
-        "pet_name2": {
+        {
+            "name": "Tchudei",
             "species": "cat",
             "breed": "persa",
             "age_years": "5",
             "weight_kilos": "7"
         }
-    }
+    ]
 }
 ```
 
@@ -115,6 +117,7 @@ Returns newly created user object (containing password)
     "email": "allan@gmail.com",
     "address": "12345-022",
     "cpf": "000.000.000-00",
+    "pets": [],
     "phone_number": "11988884444"
 }
 ```
@@ -148,8 +151,8 @@ name: "Jonh Doe"
 email: "user@server.com"
 address: "12345-022"
 phone_number: "99999999999"
-pets: (stringified JSON) `{"pet_name1":{"species":"dog","breed":"labrador","age_years":"10","weight_kilos":"12"}}`
-```
+pets: (stringified JSON, only one per request) `{"name":"Tchunay","species":"dog","breed":"labrador","age_years":"10","weight_kilos":"12"}`
+```    
 
 *Responses*
 
@@ -165,14 +168,15 @@ Returns updated user object (except password)
     "address": "12345-022",
     "cpf": "000.000.000-00",
     "phone_number": "11988884444",
-    "pets": {
-        "pet_name1": {
+    "pets": [
+        {
+            "name": "Tchunay",
             "species": "dog",
             "breed": "labrador",
             "age_years": "10",
             "weight_kilos": "12"
         }
-    }
+    ]
 }
 ```
 
@@ -247,7 +251,7 @@ name: "PetX"
 email: "user@server.com"
 address: "12345-022"
 phone_number: "99999999999"
-services: (stringified JSON) `[{"service_name":"some name","service_id":"service id on services collection","price":"R$19,99"}]`
+services: (stringified JSON, only one per request) `{"service_name":"some name","service_id":"service id on services collection","price":"R$19,99"}`
 description: "Melhor petshop da regiao!"
 hours: "08h00 - 20h00"
 profile_pic: [File]
