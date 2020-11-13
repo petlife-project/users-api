@@ -20,6 +20,10 @@ class MongoAdapterTestCase(unittest.TestCase):
         self.mocks['conn_str'] = conn_str.start()
         self.patches.append(conn_str)
 
+        return_doc_patch = patch('users.utils.db.mongo_adapter.ReturnDocument')
+        self.mocks['return_doc_mock'] = return_doc_patch.start()
+        self.patches.append(return_doc_patch)
+
     def tearDown(self):
         for patch_ in self.patches:
             patch_.stop()
@@ -75,8 +79,7 @@ class MongoAdapterTestCase(unittest.TestCase):
         with self.assertRaises(KeyError):
             MongoAdapter.create(mock_self, collection, doc)
 
-    @staticmethod
-    def test_update_successful_run_updated_document():
+    def test_update_not_updating_list_fields_updated_document(self):
         # Setup
         mock_self = MagicMock()
         collection = 'test'
@@ -85,58 +88,60 @@ class MongoAdapterTestCase(unittest.TestCase):
             'password': 'ape',
             'test_field': 'new_value'
         }
-        mock_self.db_['test'].update_one.return_value = MagicMock(
-            matched_count=1
-        )
 
         # Act
         MongoAdapter.update(mock_self, collection, doc)
 
         # Assert
-        mock_self.db_['test'].update_one.assert_called_with(
-            {'username': 'unique_user', 'password': 'ape'},
-            {'$set': {
+        mock_self.db_['test'].find_one_and_update.assert_called_with(
+            {
                 'username': 'unique_user',
-                'password': 'ape',
-                'test_field': 'new_value'
-            }
-        }
-        )
-        mock_self.get_user_information.assert_called_with(
-            'test', 'unique_user', 'ape'
-        )
-
-    def test_update_no_match_raises_key_error(self):
-        # Setup
-        mock_self = MagicMock()
-        collection = 'test'
-        doc = {
-            'username': 'missingno',
-            'password': '?',
-            'test_field': 'new_value'
-        }
-        mock_self.db_['test'].update_one.return_value = MagicMock(
-            matched_count=0
+                'password': 'ape'
+            },
+            {
+                '$set': {
+                    'test_field': 'new_value'
+                }
+            },
+            return_document=self.mocks['return_doc_mock'].AFTER
         )
 
-        # Act & Assert
-        with self.assertRaises(KeyError):
-            MongoAdapter.update(mock_self, collection, doc)
-            mock_self.get_user_information.assert_not_called_with()
-
-    def test_update_except_pymongoerror(self):
+    def test_update_updating_list_field_updated_document(self):
         # Setup
         mock_self = MagicMock()
         collection = 'test'
         doc = {
             'username': 'unique_user',
             'password': 'ape',
-            'test_field': 'new_value'
+            'services': 'new_value'
         }
-        mock_self.db_['test'].update_one.side_effect = PyMongoError
+
+        # Act
+        MongoAdapter.update(mock_self, collection, doc)
+
+        # Assert
+        mock_self.db_['test'].find_one_and_update.assert_called_with(
+            {
+                'username': 'unique_user',
+                'password': 'ape'
+            },
+            {
+                '$push': {
+                    'services': 'new_value'
+                }
+            },
+            return_document=self.mocks['return_doc_mock'].AFTER
+        )
+
+    def test_update_document_not_found_no_update_raises_key_error(self):
+        # Arrange
+        mock_self = MagicMock()
+        collection = 'test'
+        doc = {}
+        mock_self.db_.test.find_one_and_update.return_value = None
 
         # Act & Assert
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(KeyError):
             MongoAdapter.update(mock_self, collection, doc)
 
     def test_delete_successful_run_deleted_document(self):

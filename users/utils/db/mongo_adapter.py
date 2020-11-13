@@ -1,4 +1,5 @@
 from pymongo import MongoClient
+from pymongo.collection import ReturnDocument
 from pymongo.errors import DuplicateKeyError, PyMongoError
 
 from users.utils.env_vars import MONGO_CONNECTION_STRING
@@ -52,11 +53,26 @@ class MongoAdapter:
                 Operation's acknowledgement (bool)
         """
         filter_ = {'username': doc['username'], 'password': doc['password']}
+        del doc['username']
+        del doc['password']
+
         try:
-            operation = self.db_[collection].update_one(filter_, {'$set': doc})
-            if operation.matched_count == 0:
+            if doc.get('services') or doc.get('pets'):
+                updated = self.db_[collection].find_one_and_update(
+                    filter_, {'$push': doc}, return_document=ReturnDocument.AFTER
+                )
+            else:
+                updated = self.db_[collection].find_one_and_update(
+                    filter_, {'$set': doc}, return_document=ReturnDocument.AFTER
+                )
+
+            if not updated:
                 raise KeyError('No such object in collection')
-            return self.get_user_information(collection, doc['username'], doc['password'])
+
+            del updated['_id']
+            del updated['password']
+
+            return updated
 
         except PyMongoError as error:
             print(f'Error when performing update on MongoDB: {error}')
