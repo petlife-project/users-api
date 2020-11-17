@@ -78,6 +78,45 @@ class MongoAdapter:
             print(f'Error when performing update on MongoDB: {error}')
             raise RuntimeError from error
 
+    def remove_service(self, collection, doc):
+        """ Finds and updates a document in a collection
+
+            Args:
+                collection (str): The collection where the document is
+                doc (dict): The document or partial document to be updated
+                            (must contain username field)
+
+            Raises:
+                RuntimeError: If any errors occur while doing the operation
+
+            Returns:
+                Operation's acknowledgement (bool)
+        """
+        filter_ = {'username': doc['username'], 'password': doc['password']}
+        del doc['username']
+        del doc['password']
+
+        try:
+            updated = self.db_[collection].find_one_and_update(
+                filter_, {'$pull': {
+                    'services': {
+                        'service_id': doc['service_id']
+                    }
+                }}, return_document=ReturnDocument.AFTER
+            )
+
+            if not updated:
+                raise KeyError('No such object in collection')
+
+            del updated['_id']
+            del updated['password']
+
+            return updated
+
+        except PyMongoError as error:
+            print(f'Error when performing update on MongoDB: {error}')
+            raise RuntimeError from error
+
     def delete(self, collection, doc):
         """ Finds and deletes a document in a collection
 
