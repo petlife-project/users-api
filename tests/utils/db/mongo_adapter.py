@@ -137,11 +137,22 @@ class MongoAdapterTestCase(unittest.TestCase):
         # Arrange
         mock_self = MagicMock()
         collection = 'test'
-        doc = {}
-        mock_self.db_.test.find_one_and_update.return_value = None
+        doc = {'username': 'test', 'password': 'test'}
+        mock_self.db_['test'].find_one_and_update.return_value = None
 
         # Act & Assert
         with self.assertRaises(KeyError):
+            MongoAdapter.update(mock_self, collection, doc)
+
+    def test_update_document_unexpected_error_raises_runtime_error(self):
+        # Arrange
+        mock_self = MagicMock()
+        collection = 'test'
+        doc = {'username': 'test', 'password': 'test'}
+        mock_self.db_['test'].find_one_and_update.side_effect = PyMongoError()
+
+        # Act & Assert
+        with self.assertRaises(RuntimeError):
             MongoAdapter.update(mock_self, collection, doc)
 
     def test_delete_successful_run_deleted_document(self):
@@ -230,3 +241,59 @@ class MongoAdapterTestCase(unittest.TestCase):
             MongoAdapter.get_user_information(
                 mock_self, collection, username, password
             )
+
+    def test_remove_service_removes_from_list_updated_document(self):
+        # Setup
+        mock_self = MagicMock()
+        collection = 'test'
+        doc = {
+            'username': 'unique_user',
+            'password': 'ape',
+            'service_id': 'some_id'
+        }
+        mock_self.db_['test'].find_one_and_update.return_value = {
+            '_id': 'user_id',
+            'password': 'test_pw'
+        }
+
+        # Act
+        result = MongoAdapter.remove_service(mock_self, collection, doc)
+
+        # Assert
+        mock_self.db_['test'].find_one_and_update.assert_called_with(
+            {
+                'username': 'unique_user',
+                'password': 'ape'
+            },
+            {
+                '$pull': {
+                    'services': {
+                        'service_id': 'some_id'
+                    },
+                }
+            },
+            return_document=self.mocks['return_doc_mock'].AFTER
+        )
+        self.assertEqual(result, {})
+
+    def test_remove_service_not_found_no_update_raises_key_error(self):
+        # Arrange
+        mock_self = MagicMock()
+        collection = 'test'
+        doc = {'username': 'test', 'password': 'test', 'service_id': 'test_id'}
+        mock_self.db_['test'].find_one_and_update.return_value = None
+
+        # Act & Assert
+        with self.assertRaises(KeyError):
+            MongoAdapter.remove_service(mock_self, collection, doc)
+
+    def test_remove_service_unexpected_error_raises_runtime_error(self):
+        # Arrange
+        mock_self = MagicMock()
+        collection = 'test'
+        doc = {'username': 'test', 'password': 'test', 'service_id': 'test_id'}
+        mock_self.db_['test'].find_one_and_update.side_effect = PyMongoError()
+
+        # Act & Assert
+        with self.assertRaises(RuntimeError):
+            MongoAdapter.remove_service(mock_self, collection, doc)

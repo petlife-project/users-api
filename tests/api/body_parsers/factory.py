@@ -45,6 +45,12 @@ class BodyParserFactoryTestCase(unittest.TestCase):
         self.mocks['shops_up_fields_mock'] = shops_up_fields_patch.start()
         self.patches.append(shops_up_fields_patch)
 
+        service_rm_fields_patch = patch(
+            'users.api.body_parsers.factory.SERVICE_REMOVAL', new='service rm fields'
+        )
+        self.mocks['service_rm_fields_mock'] = service_rm_fields_patch.start()
+        self.patches.append(service_rm_fields_patch)
+
     def tearDown(self):
         for patch_ in self.patches:
             patch_.stop()
@@ -57,7 +63,8 @@ class BodyParserFactoryTestCase(unittest.TestCase):
             'client_registration': 'client reg fields',
             'shop_registration': 'shops reg fields',
             'client_update': 'client up fields',
-            'shop_update': 'shops up fields'
+            'shop_update': 'shops up fields',
+            'service_removal': 'service rm fields'
         }
 
         # Act

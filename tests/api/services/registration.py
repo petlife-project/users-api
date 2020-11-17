@@ -76,6 +76,9 @@ class RegistrationServiceTestCase(unittest.TestCase):
 
         # Assert
         mock_self._validate_fields.assert_called_with(new_user)
+        mock_self._create_array_fields.assert_called_with(
+            new_user, 'test_type'
+        )
         mock_self._insert_in_mongo.assert_called_with(
             'test_col', new_user
         )
@@ -166,3 +169,25 @@ class RegistrationServiceTestCase(unittest.TestCase):
             self.mocks['abort_mock'].assert_called_with(
                 400, extra='Invalid CNPJ'
             )
+
+    def test_create_array_fields_type_client_create_pets_array(self):
+        # Setup
+        doc = {}
+        type_ = 'client'
+
+        # Act
+        RegistrationService._create_array_fields(doc, type_)
+
+        # Assert
+        self.assertEqual(doc, {'pets': []})
+
+    def test_create_array_fields_type_shop_create_services_array(self):
+        # Setup
+        doc = {}
+        type_ = 'shop'
+
+        # Act
+        RegistrationService._create_array_fields(doc, type_)
+
+        # Assert
+        self.assertEqual(doc, {'services': []})

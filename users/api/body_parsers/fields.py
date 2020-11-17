@@ -68,3 +68,9 @@ CLIENTS_REGISTRATION_FIELDS = [
     {'name': 'cpf', 'type': str, 'location': 'form', 'required': False,
      'store_missing': False}
 ]
+
+SERVICE_REMOVAL = [
+    {'name': 'username', 'type': str, 'location': 'args', 'required': True},
+    {'name': 'password', 'type': str, 'location': 'args', 'required': True},
+    {'name': 'service_id', 'type': str, 'location': 'args', 'required': True},
+]

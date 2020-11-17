@@ -2,6 +2,7 @@ from flask_restful import Resource
 
 from users.api.services.registration import RegistrationService
 from users.api.services.update import UpdateService
+from users.api.services.removal import RemovalService
 
 
 class Shops(Resource):
@@ -16,3 +17,8 @@ class Shops(Resource):
     def put():
         service = UpdateService()
         return service.update('shop')
+
+    @staticmethod
+    def delete():
+        service = RemovalService()
+        return service.remove()
