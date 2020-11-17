@@ -301,3 +301,45 @@ Returns a bad request code if any of the fields fail upon validation
 Invalid email address
 Incorrect username or password
 ```
+
+## Service removal ##
+`DELETE /shops?username=<exact-match>&password=<exact-match>&service_id=<exact-match>`
+
+
+*Responses*
+
+`200 OK`
+
+Returns updated user object (except password)
+
+```JSON
+{
+    "username": "user",
+    "name": "PetX",
+    "pics": {
+        "profile": "file id on cos",
+        "banner": "file id on cos"
+    },
+    "email": "user@server.com",
+    "address": "00000-000",
+    "cnpj": "00.000.000/0001-00",
+    "phone_number": "11 38965749",
+    "description": "LOREM IPSUM",
+    "hours": "08h00 - 20h00",
+    "services": [
+        {
+            "service_name": "some name",
+            "service_id": "service id on services collection",
+            "price": "R$19,99"
+        }
+    ]
+}
+```
+
+`400 Bad Request`
+
+Returns a bad request code if any of the fields fail upon validation
+
+```JSON
+Incorrect username or password
+```
