@@ -25,6 +25,10 @@ class ShopsTestCase(unittest.TestCase):
         self.mocks['removal_service_mock'] = removal_service_patch.start()
         self.patches.append(removal_service_patch)
 
+        get_all_service_patch = patch('users.api.routes.shops.GetAllService')
+        self.mocks['get_all_service_mock'] = get_all_service_patch.start()
+        self.patches.append(get_all_service_patch)
+
     def tearDown(self):
         for patch_ in self.patches:
             patch_.stop()
@@ -55,3 +59,12 @@ class ShopsTestCase(unittest.TestCase):
         self.mocks['removal_service_mock'].assert_called()
         self.mocks['removal_service_mock'].return_value.\
             remove.assert_called()
+
+    def test_get_calls_get_all_service(self):
+        # Act
+        Shops.get()
+
+        # Assert
+        self.mocks['get_all_service_mock'].assert_called()
+        self.mocks['get_all_service_mock'].return_value.\
+            get.assert_called()

@@ -297,3 +297,21 @@ class MongoAdapterTestCase(unittest.TestCase):
         # Act & Assert
         with self.assertRaises(RuntimeError):
             MongoAdapter.remove_service(mock_self, collection, doc)
+
+    def test_get_users_calls_find_returns_shops_list(self):
+        # Arrange
+        mock_self = MagicMock()
+        collection = 'test'
+        mock_self._find.return_value = [
+            {'user': 'test1', 'password': 'test'},
+            {'user': 'test2', 'password': 'test'}
+        ]
+
+        # Act
+        results = MongoAdapter.get_users(mock_self, collection)
+
+        # Assert
+        self.assertEqual(results, [
+            {'user': 'test1'},
+            {'user': 'test2'}
+        ])

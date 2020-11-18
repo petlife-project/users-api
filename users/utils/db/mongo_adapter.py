@@ -160,6 +160,23 @@ class MongoAdapter:
         except IndexError as error:
             raise KeyError('Invalid user information') from error
 
+    def get_users(self, collection):
+        """ Search for all the users in a collection
+
+            Args:
+                collection (str): The collection to be searched on
+
+            Returns:
+                result_list (list): List of found documents
+        """
+        query = {}
+        result_list = self._find(collection, query)
+
+        for shop in result_list:
+            del shop['password']
+
+        return result_list
+
     def _find(self, collection, query):
         """ Generic method for performing searches
 
