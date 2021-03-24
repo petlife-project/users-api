@@ -1,25 +1,18 @@
 {
-    "username": "must be unique",
-    "password": "first 6 digits of cpf field",
-    "name": "John Doe",
-    "email": "johndoe@server.com",
-    "address": "00000-000",
-    "cpf": "000.000.000-00",
-    "phone_number": "11988884444",
+    "username": "string",
+    "password": "string",
+    "name": "string",
+    "email": "string",
+    "address": "string",
+    "cpf": "string",
+    "phone_number": "string",
     "pets": [
         {
-            "name": "Tchunay",
-            "species": "dog",
-            "breed": "labrador",
-            "age_years": "10",
-            "weight_kilos": "12"
-        },
-        {
-            "name": "Tchudei",
-            "species": "cat",
-            "breed": "persa",
-            "age_years": "5",
-            "weight_kilos": "7"
+            "name": "string",
+            "species": "string",
+            "breed": "string",
+            "age_years": "integer",
+            "weight_kilos": "float"
         }
     ]
 }

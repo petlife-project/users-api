@@ -12,10 +12,6 @@ class UpdateServiceTestCase(unittest.TestCase):
         self.mocks = {}
         self.patches = []
 
-        json_patch = patch('users.api.services.update.json')
-        self.mocks['json_mock'] = json_patch.start()
-        self.patches.append(json_patch)
-
         abort_patch = patch('users.api.services.update.abort')
         self.mocks['abort_mock'] = abort_patch.start()
         self.patches.append(abort_patch)
@@ -55,8 +51,6 @@ class UpdateServiceTestCase(unittest.TestCase):
         # Assert
         self.assertDictEqual(mock_self.validations, {
             'email': 'method1',
-            'pets': 'method2',
-            'services': 'method3',
             'profile_pic': 'method4',
             'banner_pic': 'method4'
         }
@@ -123,30 +117,6 @@ class UpdateServiceTestCase(unittest.TestCase):
             self.mocks['abort_mock'].assert_called_with(
                 500, extra='Error when updating, deu ruim'
             )
-
-    def test_validate_pets_loads_stringified_json(self):
-        # Setup
-        doc = {'pets': 'strigified_json'}
-
-        # Act
-        UpdateService._validate_pets(doc)
-
-        # Assert
-        self.mocks['json_mock'].loads.assert_called_with(
-            'strigified_json'
-        )
-
-    def test_validate_services_loads_stringified_json(self):
-        # Setup
-        doc = {'services': 'strigified_json'}
-
-        # Act
-        UpdateService._validate_services(doc)
-
-        # Assert
-        self.mocks['json_mock'].loads.assert_called_with(
-            'strigified_json'
-        )
 
     def test_validate_pics_creates_pics_object_inserts_pics(self):
         # Setup

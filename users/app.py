@@ -24,4 +24,5 @@ API.add_resource(Shops, '/shops')
 API.add_resource(Auth, '/auth')
 
 if __name__ == '__main__':
+    print(f'Server running on port {PORT}')
     SERVER.safe_start()

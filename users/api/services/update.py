@@ -1,5 +1,3 @@
-import json
-
 from flask_restful import abort
 from flask.json import jsonify
 
@@ -13,8 +11,6 @@ class UpdateService(DataInputService):
     def __init__(self):
         self.validations = {
             'email': self._validate_email,
-            'pets': self._validate_pets,
-            'services': self._validate_services,
             'profile_pic': self._validate_pics,
             'banner_pic': self._validate_pics
         }
@@ -52,18 +48,6 @@ class UpdateService(DataInputService):
 
         except RuntimeError as error:
             abort(500, extra=f'Error when updating, {error}')
-
-    @staticmethod
-    def _validate_pets(doc):
-        pets = json.loads(doc['pets'])
-        # Future validations go here
-        doc['pets'] = pets
-
-    @staticmethod
-    def _validate_services(doc):
-        services = json.loads(doc['services'])
-        # Future validations go here
-        doc['services'] = services
 
     @staticmethod
     def _validate_pics(doc):
