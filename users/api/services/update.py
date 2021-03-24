@@ -5,6 +5,7 @@ from users.utils.db.adapter_factory import get_mongo_adapter, get_cos_adapter
 from users.api.services.data_input import DataInputService
 
 
+# pylint: disable=inconsistent-return-statements
 class UpdateService(DataInputService):
     """ Service for users to add and/or change their information
     """

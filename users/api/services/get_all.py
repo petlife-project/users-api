@@ -4,6 +4,7 @@ from users.utils.db.adapter_factory import get_mongo_adapter
 from users.utils.env_vars import SHOPS_COLLECTION
 
 
+# pylint: disable=inconsistent-return-statements
 class GetAllService:
     """ Service responsible for getting a list of
         all the shops registered in the system.

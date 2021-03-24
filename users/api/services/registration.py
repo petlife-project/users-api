@@ -7,6 +7,7 @@ from users.utils.db.adapter_factory import get_mongo_adapter
 from users.api.services.data_input import DataInputService
 
 
+# pylint: disable=inconsistent-return-statements
 class RegistrationService(DataInputService):
     """ Service responsible for registering new users, both clients and shops
     """

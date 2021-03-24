@@ -6,6 +6,7 @@ from users.utils.db.adapter_factory import get_mongo_adapter
 from users.utils.env_vars import CLIENTS_COLLECTION, SHOPS_COLLECTION
 
 
+# pylint: disable=inconsistent-return-statements
 class AuthenticationService:
     """ Service for authentication, used in the login
     """
