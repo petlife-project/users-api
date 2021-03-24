@@ -6,6 +6,7 @@ from users.api.body_parsers.factory import FACTORY
 from users.utils.env_vars import SHOPS_COLLECTION
 
 
+# pylint: disable=inconsistent-return-statements
 class RemovalService:
     """ Service for petshops to remove a service from their list of available ones
     """
