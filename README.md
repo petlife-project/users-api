@@ -31,7 +31,7 @@ $ export $(cat .env | xargs)
 5 - Finally, start the application:
 
 ```
-$ python3.7 -m users.app
+$ python -m users.app
 ```
 
 # Use cases and endpoints #
@@ -40,11 +40,14 @@ $ python3.7 -m users.app
 `POST /auth` 
 
 *Request body:*
-Form data
-```
-username: "user"
-password: "pass"
-type: "client" | "shop"
+JSON
+```json
+{
+    "username": "string",
+    "password": "string",
+    "type": "client" | "shop"
+}
+
 ```
 
 *Responses*
@@ -55,27 +58,20 @@ Returns whole user object (except password)
 
 ```JSON
 {
-    "username": "allandlo",
-    "name": "Allan",
-    "email": "allan@gmail.com",
-    "address": "12345-022",
-    "cpf": "000.000.000-00",
-    "phone_number": "11988884444",
+    "username": "string",
+    "name": "string",
+    "email": "string",
+    "address": "string",
+    "cpf": "string",
+    "phone_number": "string",
     "pets": [
         {
-            "name": "Tchunay",
-            "species": "dog",
-            "breed": "labrador",
-            "age_years": "10",
-            "weight_kilos": "12"
+            "name": "string",
+            "species": "string",
+            "breed": "string",
+            "age_years": "integer",
+            "weight_kilos": "float"
         },
-        {
-            "name": "Tchudei",
-            "species": "cat",
-            "breed": "persa",
-            "age_years": "5",
-            "weight_kilos": "7"
-        }
     ]
 }
 ```
@@ -92,15 +88,17 @@ Invalid user information
 `POST /clients`
 
 *Request body:*
-Form data
-```
-username: "user"
-password: "pass"
-name: "Jonh Doe"
-email: "user@server.com"
-address: "12345-022"
-phone_number: "99999999999"
-cpf: "12345678900"
+JSON
+```json
+{
+    "username": "string",
+    "password": "string",
+    "name": "string",
+    "email": "string",
+    "address": "string",
+    "phone_number": "string",
+    "cpf": "string"
+}
 ```
 
 *Responses*
@@ -111,14 +109,14 @@ Returns newly created user object (containing password)
 
 ```JSON
 {
-    "username": "allandlo",
-    "password": "created_password",
-    "name": "Allan",
-    "email": "allan@gmail.com",
-    "address": "12345-022",
-    "cpf": "000.000.000-00",
+    "username": "string",
+    "password": "string",
+    "name": "string",
+    "email": "string",
+    "address": "string",
+    "cpf": "string",
     "pets": [],
-    "phone_number": "11988884444"
+    "phone_number": "string"
 }
 ```
 
@@ -143,15 +141,23 @@ Invalid CPF
 `PUT /clients`
 
 *Request body:*
-Form data
-```
-username: "user"
-password: "pass"
-name: "Jonh Doe"
-email: "user@server.com"
-address: "12345-022"
-phone_number: "99999999999"
-pets: (stringified JSON, only one per request) `{"name":"Tchunay","species":"dog","breed":"labrador","age_years":"10","weight_kilos":"12"}`
+JSON
+```json
+{
+    "username": "string",
+    "password": "string",
+    "name": "string",
+    "email": "string",
+    "address": "string",
+    "phone_number": "string",
+    "pets": { // Only one per request
+        "name": "string",
+        "species": "string",
+        "breed": "string",
+        "age_years": "integer",
+        "weight_kilos": "float"
+    }
+}
 ```    
 
 *Responses*
@@ -162,19 +168,19 @@ Returns updated user object (except password)
 
 ```JSON
 {
-    "username": "allandlo",
-    "name": "Allan",
-    "email": "allan@gmail.com",
-    "address": "12345-022",
-    "cpf": "000.000.000-00",
-    "phone_number": "11988884444",
+    "username": "string",
+    "name": "string",
+    "email": "string",
+    "address": "string",
+    "cpf": "string",
+    "phone_number": "string",
     "pets": [
         {
-            "name": "Tchunay",
-            "species": "dog",
-            "breed": "labrador",
-            "age_years": "10",
-            "weight_kilos": "12"
+            "name": "string",
+            "species": "string",
+            "breed": "string",
+            "age_years": "integer",
+            "weight_kilos": "float"
         }
     ]
 }
@@ -193,15 +199,17 @@ Incorrect username or password
 `POST /shops`
 
 *Request body:*
-Form data
-```
-username: "user"
-password: "pass"
-name: "PetX"
-email: "petx@corpemail.com"
-address: "12345-022"
-phone_number: "99999999999"
-cnpj: "12345678901234"
+JSON
+```json
+{
+    "username": "string",
+    "password": "string",
+    "name": "string",
+    "email": "string",
+    "address": "string",
+    "phone_number": "string",
+    "cnpj": "string"
+}
 ```
 
 *Responses*
@@ -212,13 +220,13 @@ Returns newly created user object (containing password)
 
 ```JSON
 {
-    "username": "petx",
-    "password": "created_password",
-    "name": "PetX",
-    "email": "petx@corpemail.com",
-    "address": "12345-022",
-    "cnpj": "12345678901234",
-    "phone_number": "11988884444"
+    "username": "string",
+    "password": "string",
+    "name": "string",
+    "email": "string",
+    "address": "string",
+    "cnpj": "string",
+    "phone_number": "string"
 }
 ```
 
@@ -243,19 +251,27 @@ Invalid CNPJ
 `PUT /shops`
 
 *Request body:*
-Form data
-```
-username: "user"
-password: "pass"
-name: "PetX"
-email: "user@server.com"
-address: "12345-022"
-phone_number: "99999999999"
-services: (stringified JSON, only one per request) `{"service_name":"some name","service_id":"service id on services collection","price":"R$19,99"}`
-description: "Melhor petshop da regiao!"
-hours: "08h00 - 20h00"
-profile_pic: [File]
-banner_pic: [File]
+JSON
+```json
+{
+    "username": "string",
+    "password": "string",
+    "name": "string",
+    "profile_pic": "base64 encoded file",
+    "banner_pic": "base64 encoded file",
+    "email": "string",
+    "address": "string",
+    "cnpj": "string",
+    "phone_number": "string",
+    "description": "string",
+    "hours": "string",
+    "services": { // Only one per request
+        "service_name": "string",
+        "service_id": "string",
+        "price": "string"
+    }
+}
+
 ```
 
 *Responses*
@@ -266,28 +282,24 @@ Returns updated user object (except password)
 
 ```JSON
 {
-    "username": "user",
-    "name": "PetX",
+    "username": "string",
+    "password": "string",
+    "name": "string",
     "pics": {
-        "profile": "file id on cos",
-        "banner": "file id on cos"
+        "profile": "bytes",
+        "banner": "bytes"
     },
-    "email": "user@server.com",
-    "address": "00000-000",
-    "cnpj": "00.000.000/0001-00",
-    "phone_number": "11 38965749",
-    "description": "LOREM IPSUM",
-    "hours": "08h00 - 20h00",
+    "email": "string",
+    "address": "string",
+    "cnpj": "string",
+    "phone_number": "string",
+    "description": "string",
+    "hours": "string",
     "services": [
         {
-            "service_name": "some name",
-            "service_id": "service id on services collection",
-            "price": "R$19,99"
-        },
-        {
-            "service_name": "some other name",
-            "service_id": "service id on services collection",
-            "price": "R$39,99"
+            "service_name": "string",
+            "service_id": "string",
+            "price": "string"
         }
     ]
 }
@@ -314,23 +326,23 @@ Returns updated user object (except password)
 
 ```JSON
 {
-    "username": "user",
-    "name": "PetX",
+    "username": "string",
+    "name": "string",
     "pics": {
-        "profile": "file id on cos",
-        "banner": "file id on cos"
+        "profile": "bytes",
+        "banner": "bytes"
     },
-    "email": "user@server.com",
-    "address": "00000-000",
-    "cnpj": "00.000.000/0001-00",
-    "phone_number": "11 38965749",
-    "description": "LOREM IPSUM",
-    "hours": "08h00 - 20h00",
+    "email": "string",
+    "address": "string",
+    "cnpj": "string",
+    "phone_number": "string",
+    "description": "string",
+    "hours": "string",
     "services": [
         {
-            "service_name": "some name",
-            "service_id": "service id on services collection",
-            "price": "R$19,99"
+            "service_name": "string",
+            "service_id": "string",
+            "price": "string"
         }
     ]
 }
