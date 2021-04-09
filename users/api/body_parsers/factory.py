@@ -20,20 +20,6 @@ class BodyParserFactory:
         }
 
     def get_parser(self, type_):
-        """ Chooses the parser type
-
-            Args:
-                type_ (str): Possible types are:
-                    - auth
-                    - client_registration
-                    - shop_registration
-                    - client_update
-                    - shop_update
-                    - service_removal
-
-            Returns:
-                BodyParser: Instance of body parser according to set type
-        """
         return BodyParser(self.types[type_])
 
 

@@ -52,11 +52,13 @@ class RegistrationServiceTestCase(unittest.TestCase):
         RegistrationService.__init__(mock_self)
 
         # Assert
-        self.assertDictEqual(mock_self.validations, {
-            'email': 'method1',
-            'cpf': 'method2',
-            'cnpj': 'method3'
-        }
+        self.assertDictEqual(
+            mock_self.validations,
+            {
+                'email': 'method1',
+                'cpf': 'method2',
+                'cnpj': 'method3'
+            }
         )
 
     @staticmethod

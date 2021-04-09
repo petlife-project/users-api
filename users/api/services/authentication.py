@@ -1,5 +1,6 @@
 from flask_restful import abort
 from flask.json import jsonify
+from flask_jwt_extended import create_access_token, get_jwt_identity
 
 from users.api.body_parsers.factory import FACTORY
 from users.utils.db.adapter_factory import get_mongo_adapter
@@ -8,8 +9,6 @@ from users.utils.env_vars import CLIENTS_COLLECTION, SHOPS_COLLECTION
 
 # pylint: disable=inconsistent-return-statements
 class AuthenticationService:
-    """ Service for authentication, used in the login
-    """
     def __init__(self):
         self.collections = {
             'client': CLIENTS_COLLECTION,
@@ -32,32 +31,22 @@ class AuthenticationService:
         request_data = self.parser.fields
         collection = self.collections[request_data['type']]
         del request_data['type']
-        db_data = self._get_from_mongo(collection, request_data)
-        return jsonify(db_data)
+        user = self._get_from_mongo(collection, request_data)
+        return jsonify(create_access_token(user))
+
+    def delete_user(self):
+        user = get_jwt_identity()
+        collection = self.collections[user['type']]
+
+        mongo = get_mongo_adapter()
+        mongo.delete(collection, user['_id'])
 
     @staticmethod
     def _get_from_mongo(collection, user):
-        """ Gets the user object from MongoDB if username and password are correct
-            and returns the whole object (except password field)
-            for the creation of the user page. Or an error if the user is not found,
-            meaning either the user or the password didn't match the information stored.
-
-            Args:
-                collection (str): Where to look, depends on the type of user
-                user (dict): The user to look for
-
-            Returns:
-                user_object (dict): User object without password
-
-            Raises:
-                HTTPException: 401 Unauthorized if username or password don't match
-        """
         mongo = get_mongo_adapter()
-        username = user['username']
-        password = user['password']
-
         try:
-            return mongo.get_user_information(collection, username, password)
-
+            return mongo.get_user_by_username(
+                collection, user['username'], user['password']
+            )
         except KeyError as error:
-            abort(401, extra=f'{error}')
+            abort(401, extra=str(error))

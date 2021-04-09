@@ -19,17 +19,17 @@ class StorageAdapterTestCase(unittest.TestCase):
         self.patches.append(config_patch)
 
         api_key_patch = patch('users.utils.db.storage_adapter.COS_API_KEY',
-                        new='mock_api_key')
+                              new='mock_api_key')
         self.mocks['api_key_mock'] = api_key_patch.start()
         self.patches.append(api_key_patch)
 
         endpoint_patch = patch('users.utils.db.storage_adapter.COS_ENDPOINT',
-                        new='mock_endpoint')
+                               new='mock_endpoint')
         self.mocks['endpoint_mock'] = endpoint_patch.start()
         self.patches.append(endpoint_patch)
 
         resource_id_patch = patch('users.utils.db.storage_adapter.COS_RESOURCE_INSTANCE_ID',
-                        new='mock_resource_id')
+                                  new='mock_resource_id')
         self.mocks['resource_id_mock'] = resource_id_patch.start()
         self.patches.append(resource_id_patch)
 

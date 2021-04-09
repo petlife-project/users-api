@@ -4,7 +4,7 @@ from unittest.mock import patch, MagicMock
 from users.api.services.get_all import GetAllService
 
 
-# pylint: disable= (protected-access)
+# pylint: disable=protected-access
 class GetAllServiceTestCase(unittest.TestCase):
     def setUp(self):
         self.mocks = {}
@@ -19,7 +19,7 @@ class GetAllServiceTestCase(unittest.TestCase):
         self.patches.append(mongo_patch)
 
         shops_col_patch = patch('users.api.services.get_all.SHOPS_COLLECTION',
-                                  new='test_shops_col')
+                                new='test_shops_col')
         self.mocks['shops_col_mock'] = shops_col_patch.start()
         self.patches.append(shops_col_patch)
 
@@ -46,7 +46,7 @@ class GetAllServiceTestCase(unittest.TestCase):
 
         # Assert
         self.mocks['mongo_mock'].return_value.get_users.assert_called_with(
-           'test_shops_col'
+            'test_shops_col'
         )
         self.assertEqual(
             results,

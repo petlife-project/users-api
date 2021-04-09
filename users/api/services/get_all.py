@@ -20,4 +20,4 @@ class GetAllService:
             return mongo.get_users(SHOPS_COLLECTION)
 
         except KeyError as error:
-            abort(500, extra=f'{error}')
+            abort(404, extra=f'{error}')

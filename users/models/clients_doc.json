@@ -1,6 +1,7 @@
 {
     "username": "string",
     "password": "string",
+    "type": "client",
     "name": "string",
     "email": "string",
     "address": "string",

@@ -9,8 +9,6 @@ from users.api.services.data_input import DataInputService
 
 # pylint: disable=inconsistent-return-statements
 class RegistrationService(DataInputService):
-    """ Service responsible for registering new users, both clients and shops
-    """
     def __init__(self):
         self.validations = {
             'email': self._validate_email,
@@ -32,6 +30,7 @@ class RegistrationService(DataInputService):
         doc = parser.fields
         self._validate_fields(doc)
         self._create_array_fields(doc, type_)
+        doc['type'] = type_
         self._insert_in_mongo(collection, doc)
         return jsonify(doc)
 
