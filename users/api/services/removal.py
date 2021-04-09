@@ -1,5 +1,6 @@
 from flask_restful import abort
 from flask.json import jsonify
+from flask_jwt_extended import get_jwt_identity
 
 from users.utils.db.adapter_factory import get_mongo_adapter
 from users.api.body_parsers.factory import FACTORY
@@ -8,8 +9,6 @@ from users.utils.env_vars import SHOPS_COLLECTION
 
 # pylint: disable=inconsistent-return-statements
 class RemovalService:
-    """ Service for petshops to remove a service from their list of available ones
-    """
     def __init__(self):
         self.parser = FACTORY.get_parser('service_removal')
 
@@ -17,9 +16,7 @@ class RemovalService:
         """ Gets the fields from the parser and calls the update method
 
             Args:
-                The three field necessary for this operation are
-                the username and password and the service_id to identify
-                what is being removed from the list.
+                The service_id to identify which one to remove from the list.
 
             Returns:
                 The updated user object
@@ -31,11 +28,12 @@ class RemovalService:
     @staticmethod
     def _update_in_mongo(collection, doc):
         mongo = get_mongo_adapter()
+        user = get_jwt_identity()
         try:
-            return mongo.remove_service(collection, doc)
+            return mongo.remove_service(collection, doc, user['_id'])
 
         except KeyError as error:
-            abort(400, extra='Incorrect username or password.')
+            abort(404, extra=str(error))
 
         except RuntimeError as error:
             abort(500, extra=f'Error when updating, {error}')

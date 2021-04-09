@@ -10,3 +10,6 @@ SHOPS_COLLECTION = str(os.environ.get('MONGO_SHOPS_COLLECTION'))
 COS_API_KEY = str(os.environ.get('COS_API_KEY'))
 COS_RESOURCE_INSTANCE_ID = str(os.environ.get('COS_RESOURCE_INSTANCE_ID'))
 COS_ENDPOINT = str(os.environ.get('COS_ENDPOINT'))
+
+# JWT
+JWT_SECRET = str(os.environ.get('JWT_SECRET'))

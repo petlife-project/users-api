@@ -49,11 +49,9 @@ class UpdateServiceTestCase(unittest.TestCase):
         UpdateService.__init__(mock_self)
 
         # Assert
-        self.assertDictEqual(mock_self.validations, {
-            'email': 'method1',
-            'profile_pic': 'method4',
-            'banner_pic': 'method4'
-        }
+        self.assertDictEqual(
+            mock_self.validations,
+            {'email': 'method1', 'profile_pic': 'method4', 'banner_pic': 'method4'}
         )
 
     def test_update_succesful_returns_updated_user(self):

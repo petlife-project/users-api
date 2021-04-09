@@ -29,7 +29,7 @@ class RemovalServiceTestCase(unittest.TestCase):
         self.patches.append(parser_factory_patch)
 
         shops_col_patch = patch('users.api.services.removal.SHOPS_COLLECTION',
-                                  new='test_shops_col')
+                                new='test_shops_col')
         self.mocks['shops_col_mock'] = shops_col_patch.start()
         self.patches.append(shops_col_patch)
 

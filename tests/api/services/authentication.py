@@ -34,7 +34,7 @@ class AuthenticationServiceTestCase(unittest.TestCase):
         self.patches.append(clients_col_patch)
 
         shops_col_patch = patch('users.api.services.authentication.SHOPS_COLLECTION',
-                                  new='test_shops_col')
+                                new='test_shops_col')
         self.mocks['shops_col_mock'] = shops_col_patch.start()
         self.patches.append(shops_col_patch)
 
@@ -52,8 +52,8 @@ class AuthenticationServiceTestCase(unittest.TestCase):
         # Assert
         self.assertDictEqual(
             mock_self.collections, {
-            'client': self.mocks['clients_col_mock'],
-            'shop': self.mocks['shops_col_mock']
+                'client': self.mocks['clients_col_mock'],
+                'shop': self.mocks['shops_col_mock']
             }
         )
         self.mocks['parser_factory_mock'].get_parser.assert_called_with('auth')
@@ -91,7 +91,7 @@ class AuthenticationServiceTestCase(unittest.TestCase):
             'username': 'crying',
             'password': 'lighting'
         }
-        self.mocks['mongo_mock'].return_value.get_user_information.\
+        self.mocks['mongo_mock'].return_value.get_user_by_username.\
             return_value = {
                 'username': 'ape',
                 'password': 'monke',
@@ -105,14 +105,14 @@ class AuthenticationServiceTestCase(unittest.TestCase):
             _get_from_mongo(collection, user)
 
         # Assert
-        self.mocks['mongo_mock'].return_value.get_user_information.\
+        self.mocks['mongo_mock'].return_value.get_user_by_username.\
             assert_called_with('test_col', 'crying', 'lighting')
         self.assertDictEqual(db_data, {
-                'username': 'ape',
-                'password': 'monke',
-                'and': 'other',
-                'fields': 'thats',
-                'are': 'here'
+            'username': 'ape',
+            'password': 'monke',
+            'and': 'other',
+            'fields': 'thats',
+            'are': 'here'
         })
 
     def test_get_from_mongo_wrong_credentials(self):
@@ -122,13 +122,11 @@ class AuthenticationServiceTestCase(unittest.TestCase):
             'username': 'you_shall',
             'password': 'not_PASS'
         }
-        self.mocks['mongo_mock'].return_value.get_user_information.\
-            side_effect = KeyError('SAI FORA MANO')
+        self.mocks['mongo_mock'].return_value.get_user_by_username.\
+            return_value = None
         self.mocks['abort_mock'].side_effect = HTTPException
 
         # Act & Assert
         with self.assertRaises(HTTPException):
             AuthenticationService._get_from_mongo(collection, user)
-            self.mocks['abort_mock'].assert_called_with(
-                401, extra='SAI FORA MANO'
-            )
+            self.mocks['abort_mock'].assert_called_with(401)

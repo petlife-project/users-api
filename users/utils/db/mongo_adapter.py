@@ -29,16 +29,15 @@ class MongoAdapter:
             Returns:
                 Operation's acknowledgement (bool)
         """
-        username = doc['username']
+        username = doc.get('username')
         try:
             operation = self.db_[collection].insert_one(doc)
-            del doc['_id']
             return operation.acknowledged
 
         except DuplicateKeyError as error:
             raise KeyError(f'User {username} already exists in {collection}') from error
 
-    def update(self, collection, doc):
+    def update(self, collection, doc, user_id):
         """ Finds and updates a document in a collection
 
             Args:
@@ -52,33 +51,34 @@ class MongoAdapter:
             Returns:
                 Operation's acknowledgement (bool)
         """
-        filter_ = {'username': doc['username'], 'password': doc['password']}
-        del doc['username']
-        del doc['password']
-
+        filter_ = {'_id': user_id}
         try:
             if doc.get('services') or doc.get('pets'):
                 updated = self.db_[collection].find_one_and_update(
-                    filter_, {'$push': doc}, return_document=ReturnDocument.AFTER
+                    filter_,
+                    {'$push': doc},
+                    projection={'password': False},
+                    return_document=ReturnDocument.AFTER
                 )
             else:
                 updated = self.db_[collection].find_one_and_update(
-                    filter_, {'$set': doc}, return_document=ReturnDocument.AFTER
+                    filter_,
+                    {'$set': doc},
+                    projection={'password': False},
+                    return_document=ReturnDocument.AFTER
                 )
 
             if not updated:
-                raise KeyError('No such object in collection')
+                raise KeyError('Invalid user id')
 
-            del updated['_id']
-            del updated['password']
-
+            updated['_id'] = str(updated['_id'])
             return updated
 
         except PyMongoError as error:
             print(f'Error when performing update on MongoDB: {error}')
             raise RuntimeError from error
 
-    def remove_service(self, collection, doc):
+    def remove_service(self, collection, doc, user_id):
         """ Finds and updates a document in a collection
 
             Args:
@@ -92,32 +92,26 @@ class MongoAdapter:
             Returns:
                 Operation's acknowledgement (bool)
         """
-        filter_ = {'username': doc['username'], 'password': doc['password']}
-        del doc['username']
-        del doc['password']
-
+        filter_ = {'_id': user_id}
         try:
             updated = self.db_[collection].find_one_and_update(
-                filter_, {'$pull': {
-                    'services': {
-                        'service_id': doc['service_id']
-                    }
-                }}, return_document=ReturnDocument.AFTER
+                filter_,
+                {'$pull': {'services': {'service_id': doc['service_id']}}},
+                projection={'password': False},
+                return_document=ReturnDocument.AFTER
             )
 
             if not updated:
-                raise KeyError('No such object in collection')
+                KeyError('Invalid user id')
 
-            del updated['_id']
-            del updated['password']
-
+            updated['_id'] = str(updated['_id'])
             return updated
 
         except PyMongoError as error:
             print(f'Error when performing update on MongoDB: {error}')
             raise RuntimeError from error
 
-    def delete(self, collection, doc):
+    def delete(self, collection, user_id):
         """ Finds and deletes a document in a collection
 
             Args:
@@ -130,16 +124,16 @@ class MongoAdapter:
             Returns:
                 Operation's acknowledgement (bool)
         """
-        filter_ = {'username': doc['username']}
+        filter_ = {'_id': user_id}
         try:
-            operation = self.db_[collection].delete_one(filter_)
-            return operation.acknowledged
+            self.db_[collection].delete_one(filter_)
+            return True
 
         except PyMongoError as error:
             print(f'Error when performing deletion on MongoDB: {error}')
             raise RuntimeError from error
 
-    def get_user_information(self, collection, username, password):
+    def get_user_by_username(self, collection, username, password):
         """ Search for an specific user by username and password
 
             Args:
@@ -151,14 +145,13 @@ class MongoAdapter:
                 user_obejct (dict): The whole user object stored in MongoDB
         """
         query = {'username': username, 'password': password}
-        result_list = self._find(collection, query)
-        try:
-            user = result_list.pop()
-            del user['password']
-            return user
+        user = self.db_[collection].find_one(query, projection={'password': False})
 
-        except IndexError as error:
-            raise KeyError('Invalid user information') from error
+        if not user:
+            raise KeyError('Invalid username or password')
+
+        user['_id'] = str(user['_id'])
+        return user
 
     def get_users(self, collection):
         """ Search for all the users in a collection
@@ -169,29 +162,12 @@ class MongoAdapter:
             Returns:
                 result_list (list): List of found documents
         """
-        query = {}
-        result_list = self._find(collection, query)
+        result_list = list(self.db_[collection].find({}, projection={'password': False}))
 
-        for shop in result_list:
-            del shop['password']
+        if not result_list:
+            raise KeyError('No users yet')
+
+        for user in result_list:
+            user['_id'] = str(user['_id'])
 
         return result_list
-
-    def _find(self, collection, query):
-        """ Generic method for performing searches
-
-            Args:
-                collection (str): The collection to be searched on
-                query (dict): The query specifying what to look for
-
-            Returns:
-                List of found documents
-        """
-        results = []
-        search_result = self.db_[collection].find(query)
-
-        for doc in search_result:
-            del doc['_id']
-            results.append(doc)
-
-        return results

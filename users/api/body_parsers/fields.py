@@ -10,8 +10,6 @@ AUTH_FIELDS = [
 
 
 SHOPS_UPDATE_FIELDS = [
-    {'name': 'username', 'type': str, 'location': 'json', 'required': True},
-    {'name': 'password', 'type': str, 'location': 'json', 'required': True},
     {'name': 'email', 'type': str, 'location': 'json', 'required': False,
      'store_missing': False},
     {'name': 'address', 'type': str, 'location': 'json', 'required': False,
@@ -32,18 +30,12 @@ SHOPS_UPDATE_FIELDS = [
 
 
 CLIENTS_UPDATE_FIELDS = [
-    {'name': 'username', 'type': str, 'location': 'json', 'required': True},
-    {'name': 'password', 'type': str, 'location': 'json', 'required': True},
-    {'name': 'name', 'type': str, 'location': 'json', 'required': False,
-        'store_missing': False},
-    {'name': 'email', 'type': str, 'location': 'json', 'required': False,
-        'store_missing': False},
-    {'name': 'address', 'type': str, 'location': 'json', 'required': False,
-        'store_missing': False},
+    {'name': 'name', 'type': str, 'location': 'json', 'required': False, 'store_missing': False},
+    {'name': 'email', 'type': str, 'location': 'json', 'required': False, 'store_missing': False},
+    {'name': 'address', 'type': str, 'location': 'json', 'required': False, 'store_missing': False},
     {'name': 'phone_number', 'type': str, 'location': 'json', 'required': False,
-        'store_missing': False},
-    {'name': 'pets', 'type': dict, 'location': 'json', 'required': False,
-        'store_missing': False}
+     'store_missing': False},
+    {'name': 'pets', 'type': dict, 'location': 'json', 'required': False, 'store_missing': False}
 ]
 
 
@@ -70,7 +62,5 @@ CLIENTS_REGISTRATION_FIELDS = [
 ]
 
 SERVICE_REMOVAL = [
-    {'name': 'username', 'type': str, 'location': 'args', 'required': True},
-    {'name': 'password', 'type': str, 'location': 'args', 'required': True},
     {'name': 'service_id', 'type': str, 'location': 'args', 'required': True},
 ]

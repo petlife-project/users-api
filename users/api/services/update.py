@@ -1,5 +1,6 @@
 from flask_restful import abort
 from flask.json import jsonify
+from flask_jwt_extended import get_jwt_identity
 
 from users.utils.db.adapter_factory import get_mongo_adapter, get_cos_adapter
 from users.api.services.data_input import DataInputService
@@ -7,8 +8,6 @@ from users.api.services.data_input import DataInputService
 
 # pylint: disable=inconsistent-return-statements
 class UpdateService(DataInputService):
-    """ Service for users to add and/or change their information
-    """
     def __init__(self):
         self.validations = {
             'email': self._validate_email,
@@ -41,11 +40,12 @@ class UpdateService(DataInputService):
     @staticmethod
     def _update_in_mongo(collection, doc):
         mongo = get_mongo_adapter()
+        user = get_jwt_identity()
         try:
-            return mongo.update(collection, doc)
+            return mongo.update(collection, doc, user['_id'])
 
         except KeyError as error:
-            abort(400, extra='Incorrect username or password.')
+            abort(404, extra=str(error))
 
         except RuntimeError as error:
             abort(500, extra=f'Error when updating, {error}')

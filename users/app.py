@@ -3,6 +3,7 @@ import os
 from flask import Flask
 from flask_restful import Api
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 
 from cheroot.wsgi import PathInfoDispatcher
 from cheroot.wsgi import Server as WSGIServer
@@ -11,7 +12,13 @@ from users.api.routes.clients import Clients
 from users.api.routes.shops import Shops
 from users.api.routes.auth import Auth
 
+from users.utils.env_vars import JWT_SECRET
+
 APP = Flask(__name__)
+
+APP.config['JWT_SECRET_KEY'] = JWT_SECRET
+JWTManager(APP)
+
 CORS(APP)
 API = Api(APP)
 PORT = int(os.getenv('PORT', '8080'))

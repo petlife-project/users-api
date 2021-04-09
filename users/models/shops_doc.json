@@ -1,6 +1,7 @@
 {
     "username": "string",
     "password": "string",
+    "type": "shop",
     "name": "string",
     "pics": {
         "profile": "bytes",
