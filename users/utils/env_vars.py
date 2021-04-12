@@ -13,3 +13,4 @@ COS_ENDPOINT = str(os.environ.get('COS_ENDPOINT'))
 
 # JWT
 JWT_SECRET = str(os.environ.get('JWT_SECRET'))
+JWT_TOKEN_TTL = int(os.environ.get('JWT_TOKEN_TTL', 30))

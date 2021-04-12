@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, call
 
 from werkzeug.exceptions import HTTPException
 
@@ -34,10 +34,191 @@ class DataInputServiceTestCase(unittest.TestCase):
         self.mocks['shops_col_mock'] = shops_col_patch.start()
         self.patches.append(shops_col_patch)
 
+        jsonify_patch = patch('users.api.services.data_input.jsonify')
+        self.mocks['jsonify_mock'] = jsonify_patch.start()
+        self.patches.append(jsonify_patch)
+
+        cpf_patch = patch('users.api.services.data_input.CPF')
+        self.mocks['cpf_mock'] = cpf_patch.start()
+        self.patches.append(cpf_patch)
+
+        cnpj_patch = patch('users.api.services.data_input.CNPJ')
+        self.mocks['cnpj_mock'] = cnpj_patch.start()
+        self.patches.append(cnpj_patch)
+
+        mongo_patch = patch('users.api.services.data_input.get_mongo_adapter')
+        self.mocks['mongo_mock'] = mongo_patch.start()
+        self.patches.append(mongo_patch)
+
+        cos_patch = patch('users.api.services.data_input.get_cos_adapter')
+        self.mocks['cos_mock'] = cos_patch.start()
+        self.patches.append(cos_patch)
+
     def tearDown(self):
         for patch_ in self.patches:
             patch_.stop()
 
+    def test_init_sets_validations(self):
+        # Setup
+        mock_self = MagicMock(
+            _validate_email='method1',
+            _validate_pets='method2',
+            _validate_services='method3',
+            _validate_pics='method4',
+            _validate_cpf='method5',
+            _validate_cnpj='method6'
+        )
+
+        # Act
+        DataInputService.__init__(mock_self)
+
+        # Assert
+        self.assertDictEqual(
+            mock_self.validations,
+            {
+                'email': 'method1',
+                'profile_pic': 'method4',
+                'banner_pic': 'method4'
+            }
+        )
+
+    @staticmethod
+    def test_register_returns_new_user():
+        # Setup
+        new_user = {
+            'new': 'user',
+            'right': 'here'
+        }
+        mock_self = MagicMock(types={'test_type': 'test_col'})
+        mock_self.parser_factory.get_parser.return_value = \
+            MagicMock(fields=new_user)
+        type_ = 'test_type'
+
+        # Act
+        DataInputService.register(mock_self, type_)
+
+        # Assert
+        mock_self._validate_fields.assert_called_with(new_user)
+        mock_self._create_array_fields.assert_called_with(
+            new_user, 'test_type'
+        )
+        mock_self._insert_in_mongo.assert_called_with(
+            'test_col', new_user
+        )
+
+    def test_update_succesful_returns_updated_user(self):
+        # Setup
+        mock_self = MagicMock(types={'sftd': 'test_col'})
+        type_ = 'sftd'
+        mock_self.parser_factory.get_parser.return_value = \
+            MagicMock(fields={'purple': 'haze'})
+
+        # Act
+        updated = DataInputService.update(mock_self, type_)
+
+        # Assert
+        mock_self.parser_factory.get_parser.assert_called_with(
+            'sftd_update'
+        )
+        mock_self._update_in_mongo.assert_called_with(
+            'test_col', {'purple': 'haze'}
+        )
+        self.assertEqual(updated, self.mocks['jsonify_mock'].return_value)
+
+    def test_validate_pics_creates_pics_object_inserts_pics(self):
+        # Setup
+        doc = {
+            'profile_pic': 'fotos_da_festa.exe',
+            'banner_pic': 'nao_eh_virus.exe'
+        }
+
+        # Act
+        DataInputService._validate_pics(doc)
+
+        # Assert
+        self.mocks['cos_mock'].return_value.upload.assert_has_calls(
+            (call('fotos_da_festa.exe'), call('nao_eh_virus.exe'))
+        )
+
+    def test_validate_cpf_valid_returns_nothing(self):
+        # Setup
+        doc = {'cpf': '12345678912'}
+        self.mocks['cpf_mock'].return_value.\
+            validate.return_value = True
+
+        # Act
+        DataInputService._validate_cpf(doc)
+
+        # Assert
+        self.mocks['cpf_mock'].return_value.\
+            validate.assert_called_with(
+                '12345678912'
+            )
+
+    def test_validate_cpf_invalid_abort(self):
+        # Setup
+        doc = {'cpf': '12345678912'}
+        self.mocks['cpf_mock'].return_value.\
+            validate.return_value = False
+        self.mocks['abort_mock'].side_effect = HTTPException
+
+        # Act & Assert
+        with self.assertRaises(HTTPException):
+            DataInputService._validate_cpf(doc)
+            self.mocks['abort_mock'].assert_called_with(
+                400, extra='Invalid CPF'
+            )
+
+    def test_validate_cnpj_valid_returns_nothing(self):
+        # Setup
+        doc = {'cnpj': '12345678912'}
+        self.mocks['cnpj_mock'].return_value.\
+            validate.return_value = True
+
+        # Act
+        DataInputService._validate_cnpj(doc)
+
+        # Assert
+        self.mocks['cnpj_mock'].return_value.\
+            validate.assert_called_with(
+                '12345678912'
+            )
+
+    def test_validate_cnpj_invalid_abort(self):
+        # Setup
+        doc = {'cnpj': '12345678912'}
+        self.mocks['cnpj_mock'].return_value.\
+            validate.return_value = False
+        self.mocks['abort_mock'].side_effect = HTTPException
+
+        # Act & Assert
+        with self.assertRaises(HTTPException):
+            DataInputService._validate_cnpj(doc)
+            self.mocks['abort_mock'].assert_called_with(
+                400, extra='Invalid CNPJ'
+            )
+
+    def test_create_array_fields_type_client_create_pets_array(self):
+        # Setup
+        doc = {}
+        type_ = 'client'
+
+        # Act
+        DataInputService._create_array_fields(doc, type_)
+
+        # Assert
+        self.assertEqual(doc, {'pets': []})
+
+    def test_create_array_fields_type_shop_create_services_array(self):
+        # Setup
+        doc = {}
+        type_ = 'shop'
+
+        # Act
+        DataInputService._create_array_fields(doc, type_)
+
+        # Assert
+        self.assertEqual(doc, {'services': []})
     def test_validate_email_good_no_action(self):
         # Setup
         doc = {'email': 'holly@la.ca'}

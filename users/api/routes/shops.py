@@ -1,8 +1,7 @@
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required
 
-from users.api.services.registration import RegistrationService
-from users.api.services.update import UpdateService
+from users.api.services.data_input import DataInputService
 from users.api.services.removal import RemovalService
 from users.api.services.get_all import GetAllService
 
@@ -18,13 +17,13 @@ class Shops(Resource):
 
     @staticmethod
     def post():
-        service = RegistrationService()
+        service = DataInputService()
         return service.register('shop')
 
     @staticmethod
     @jwt_required
     def put():
-        service = UpdateService()
+        service = DataInputService()
         return service.update('shop')
 
     @staticmethod

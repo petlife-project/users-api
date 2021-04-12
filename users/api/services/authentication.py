@@ -30,9 +30,15 @@ class AuthenticationService:
         """
         request_data = self.parser.fields
         collection = self.collections[request_data['type']]
-        del request_data['type']
-        user = self._get_from_mongo(collection, request_data)
-        return jsonify(create_access_token(user))
+
+        mongo = get_mongo_adapter()
+        try:
+            user = mongo.get_user_by_username(
+                collection, request_data['username'], request_data['password']
+            )
+            return jsonify(create_access_token(user))
+        except KeyError as error:
+            abort(401, extra=str(error))
 
     def delete_user(self):
         user = get_jwt_identity()
@@ -40,13 +46,3 @@ class AuthenticationService:
 
         mongo = get_mongo_adapter()
         mongo.delete(collection, user['_id'])
-
-    @staticmethod
-    def _get_from_mongo(collection, user):
-        mongo = get_mongo_adapter()
-        try:
-            return mongo.get_user_by_username(
-                collection, user['username'], user['password']
-            )
-        except KeyError as error:
-            abort(401, extra=str(error))

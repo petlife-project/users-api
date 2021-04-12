@@ -9,12 +9,8 @@ class GetAllService:
     """ Service responsible for getting a list of
         all the shops registered in the system.
     """
-    def get(self):
-        shops_list = self._get_from_mongo()
-        return shops_list
-
     @staticmethod
-    def _get_from_mongo():
+    def get():
         mongo = get_mongo_adapter()
         try:
             return mongo.get_users(SHOPS_COLLECTION)

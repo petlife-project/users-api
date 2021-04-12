@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from users.api.services.get_all import GetAllService
 
@@ -28,39 +28,11 @@ class GetAllServiceTestCase(unittest.TestCase):
             patch_.stop()
 
     def test_get_calls_mongo_method_returns_shops_list(self):
-        # Arrange
-        mock_self = MagicMock()
-
         # Act
-        response = GetAllService.get(mock_self)
+        response = GetAllService.get()
 
         # Assert
         self.assertEqual(
             response,
-            mock_self._get_from_mongo.return_value
-        )
-
-    def test_get_from_mongo_successful_returns_list(self):
-        # Act
-        results = GetAllService._get_from_mongo()
-
-        # Assert
-        self.mocks['mongo_mock'].return_value.get_users.assert_called_with(
-            'test_shops_col'
-        )
-        self.assertEqual(
-            results,
-            self.mocks['mongo_mock'].return_value.get_users.return_value
-        )
-
-    def test_get_from_mongo_malformed_data_calls_abort(self):
-        # Arrange
-        self.mocks['mongo_mock'].return_value.get_users.side_effect = KeyError('pao de batata')
-
-        # Act
-        GetAllService._get_from_mongo()
-
-        # Assert
-        self.mocks['abort_mock'].assert_called_with(
-            500, extra="'pao de batata'"
+            {}
         )

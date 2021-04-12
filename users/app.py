@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 from flask import Flask
 from flask_restful import Api
@@ -12,11 +13,12 @@ from users.api.routes.clients import Clients
 from users.api.routes.shops import Shops
 from users.api.routes.auth import Auth
 
-from users.utils.env_vars import JWT_SECRET
+from users.utils.env_vars import JWT_SECRET, JWT_TOKEN_TTL
 
 APP = Flask(__name__)
 
 APP.config['JWT_SECRET_KEY'] = JWT_SECRET
+APP.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=JWT_TOKEN_TTL)
 JWTManager(APP)
 
 CORS(APP)
