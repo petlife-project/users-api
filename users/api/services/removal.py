@@ -22,18 +22,15 @@ class RemovalService:
                 The updated user object
         """
         doc = self.parser.fields
-        updated_user = self._update_in_mongo(SHOPS_COLLECTION, doc)
-        return jsonify(updated_user)
 
-    @staticmethod
-    def _update_in_mongo(collection, doc):
         mongo = get_mongo_adapter()
         user = get_jwt_identity()
         try:
-            return mongo.remove_service(collection, doc, user['_id'])
+            updated_user = mongo.remove_service(SHOPS_COLLECTION, doc, user['_id'])
+            return jsonify(updated_user)
 
         except KeyError as error:
-            abort(404, extra=str(error))
+            abort(404)
 
         except RuntimeError as error:
             abort(500, extra=f'Error when updating, {error}')

@@ -1,8 +1,6 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from werkzeug.exceptions import HTTPException
-
 from users.api.services.authentication import AuthenticationService
 
 
@@ -83,50 +81,3 @@ class AuthenticationServiceTestCase(unittest.TestCase):
         self.assertEqual(result, {
             'username': 'dude'
         })
-
-    def test_get_from_mongo_return_user_object(self):
-        # Setup
-        collection = 'test_col'
-        user = {
-            'username': 'crying',
-            'password': 'lighting'
-        }
-        self.mocks['mongo_mock'].return_value.get_user_by_username.\
-            return_value = {
-                'username': 'ape',
-                'password': 'monke',
-                'and': 'other',
-                'fields': 'thats',
-                'are': 'here'
-            }
-
-        # Act
-        db_data = AuthenticationService.\
-            _get_from_mongo(collection, user)
-
-        # Assert
-        self.mocks['mongo_mock'].return_value.get_user_by_username.\
-            assert_called_with('test_col', 'crying', 'lighting')
-        self.assertDictEqual(db_data, {
-            'username': 'ape',
-            'password': 'monke',
-            'and': 'other',
-            'fields': 'thats',
-            'are': 'here'
-        })
-
-    def test_get_from_mongo_wrong_credentials(self):
-        # Setup
-        collection = 'test_col'
-        user = {
-            'username': 'you_shall',
-            'password': 'not_PASS'
-        }
-        self.mocks['mongo_mock'].return_value.get_user_by_username.\
-            return_value = None
-        self.mocks['abort_mock'].side_effect = HTTPException
-
-        # Act & Assert
-        with self.assertRaises(HTTPException):
-            AuthenticationService._get_from_mongo(collection, user)
-            self.mocks['abort_mock'].assert_called_with(401)

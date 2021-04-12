@@ -1,8 +1,7 @@
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required
 
-from users.api.services.registration import RegistrationService
-from users.api.services.update import UpdateService
+from users.api.services.data_input import DataInputService
 
 
 class Clients(Resource):
@@ -10,11 +9,11 @@ class Clients(Resource):
 
     @staticmethod
     def post():
-        service = RegistrationService()
+        service = DataInputService()
         return service.register('client')
 
     @staticmethod
     @jwt_required
     def put():
-        service = UpdateService()
+        service = DataInputService()
         return service.update('client')

@@ -1,8 +1,6 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from werkzeug.exceptions import HTTPException
-
 from users.api.services.removal import RemovalService
 
 
@@ -62,46 +60,3 @@ class RemovalServiceTestCase(unittest.TestCase):
             mock_self._update_in_mongo.return_value
         )
         self.assertEqual(updated, self.mocks['jsonify_mock'].return_value)
-
-    def test_update_in_mongo_successful_returns_updated(self):
-        # Setup
-        collection = 'test_col'
-        doc = {'test': 'doc'}
-
-        # Act
-        RemovalService._update_in_mongo(collection, doc)
-
-        # Assert
-        self.mocks['mongo_mock'].return_value.remove_service.assert_called_with(
-            'test_col', {'test': 'doc'}
-        )
-
-    def test_update_in_mongo_incorrect_credentials(self):
-        # Setup
-        collection = 'test_col'
-        doc = {}
-        self.mocks['mongo_mock'].return_value.remove_service.side_effect = \
-            KeyError
-        self.mocks['abort_mock'].side_effect = HTTPException
-
-        # Act & Assert
-        with self.assertRaises(HTTPException):
-            RemovalService._update_in_mongo(collection, doc)
-            self.mocks['abort_mock'].assert_called_with(
-                400, extra='Incorrect username or password.'
-            )
-
-    def test_update_in_mongo_unexpected_error(self):
-        # Setup
-        collection = 'test_col'
-        doc = {}
-        self.mocks['mongo_mock'].return_value.remove_service.side_effect = \
-            RuntimeError('deu ruim')
-        self.mocks['abort_mock'].side_effect = HTTPException
-
-        # Act & Assert
-        with self.assertRaises(HTTPException):
-            RemovalService._update_in_mongo(collection, doc)
-            self.mocks['abort_mock'].assert_called_with(
-                500, extra='Error when updating, deu ruim'
-            )
