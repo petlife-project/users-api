@@ -60,14 +60,25 @@ class MongoAdapter:
         """
         filter_ = self._get_id_filter(user_id)
         try:
-            if doc.get('services') or doc.get('pets'):
+            if doc.get('services'):
                 updated = self.db_[collection].find_one_and_update(
                     filter_,
-                    {'$push': doc},
+                    {'$push': {'services': doc.get('services')}},
                     projection={'password': False},
                     return_document=ReturnDocument.AFTER
                 )
-            else:
+                del doc['services']
+
+            if doc.get('pets'):
+                updated = self.db_[collection].find_one_and_update(
+                    filter_,
+                    {'$push': {'pets': doc.get('pets')}},
+                    projection={'password': False},
+                    return_document=ReturnDocument.AFTER
+                )
+                del doc['pets']
+
+            if doc:
                 updated = self.db_[collection].find_one_and_update(
                     filter_,
                     {'$set': doc},
@@ -114,7 +125,7 @@ class MongoAdapter:
             )
 
             if not updated:
-                KeyError('Invalid user id')
+                KeyError('No object found with set name/id')
 
             updated['_id'] = str(updated['_id'])
             return updated
