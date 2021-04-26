@@ -30,4 +30,4 @@ class Shops(Resource):
     @jwt_required
     def delete():
         service = RemovalService()
-        return service.remove()
+        return service.remove('shop')
