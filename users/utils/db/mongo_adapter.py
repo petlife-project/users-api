@@ -1,3 +1,5 @@
+from bson.objectid import ObjectId
+
 from pymongo import MongoClient
 from pymongo.collection import ReturnDocument
 from pymongo.errors import DuplicateKeyError, PyMongoError
@@ -27,12 +29,17 @@ class MongoAdapter:
                 KeyError: When document is duplicate
 
             Returns:
-                Operation's acknowledgement (bool)
+                doc with id
         """
         username = doc.get('username')
         try:
-            operation = self.db_[collection].insert_one(doc)
-            return operation.acknowledged
+            self.db_[collection].insert_one(doc)
+            doc['_id'] = str(doc['_id'])
+            del doc['password']
+            # PyMongo's insert_one modifies the input value
+            # instead of returning a modified version (yikes)
+            # so there's no need to return the value, as the "doc"
+            # variable where this method is called is already altered.
 
         except DuplicateKeyError as error:
             raise KeyError(f'User {username} already exists in {collection}') from error
@@ -51,7 +58,7 @@ class MongoAdapter:
             Returns:
                 Operation's acknowledgement (bool)
         """
-        filter_ = {'_id': user_id}
+        filter_ = self._get_id_filter(user_id)
         try:
             if doc.get('services') or doc.get('pets'):
                 updated = self.db_[collection].find_one_and_update(
@@ -92,7 +99,7 @@ class MongoAdapter:
             Returns:
                 Operation's acknowledgement (bool)
         """
-        filter_ = {'_id': user_id}
+        filter_ = self._get_id_filter(user_id)
         try:
             updated = self.db_[collection].find_one_and_update(
                 filter_,
@@ -124,7 +131,7 @@ class MongoAdapter:
             Returns:
                 Operation's acknowledgement (bool)
         """
-        filter_ = {'_id': user_id}
+        filter_ = self._get_id_filter(user_id)
         try:
             self.db_[collection].delete_one(filter_)
             return True
@@ -171,3 +178,7 @@ class MongoAdapter:
             user['_id'] = str(user['_id'])
 
         return result_list
+
+    @staticmethod
+    def _get_id_filter(user_id):
+        return {'_id': ObjectId(user_id)}
