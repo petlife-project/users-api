@@ -61,6 +61,12 @@ CLIENTS_REGISTRATION_FIELDS = [
      'store_missing': False}
 ]
 
+
 SERVICE_REMOVAL = [
-    {'name': 'service_id', 'type': str, 'location': 'args', 'required': True},
+    {'name': 'service_id', 'type': str, 'location': 'args', 'required': True}
+]
+
+
+PET_REMOVAL = [
+    {'name': 'pet_name', 'type': str, 'location': 'args', 'required': True}
 ]

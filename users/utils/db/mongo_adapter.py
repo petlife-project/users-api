@@ -85,7 +85,7 @@ class MongoAdapter:
             print(f'Error when performing update on MongoDB: {error}')
             raise RuntimeError from error
 
-    def remove_service(self, collection, doc, user_id):
+    def remove(self, collection, doc, user_id):
         """ Finds and updates a document in a collection
 
             Args:
@@ -101,9 +101,14 @@ class MongoAdapter:
         """
         filter_ = self._get_id_filter(user_id)
         try:
+            if doc.get('service_id'):
+                alteration = {'$pull': {'services': {'service_id': doc['service_id']}}}
+            elif doc.get('pet_name'):
+                alteration = {'$pull': {'pets': {'name': doc['pet_name']}}}
+
             updated = self.db_[collection].find_one_and_update(
                 filter_,
-                {'$pull': {'services': {'service_id': doc['service_id']}}},
+                alteration,
                 projection={'password': False},
                 return_document=ReturnDocument.AFTER
             )
