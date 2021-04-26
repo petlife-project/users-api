@@ -45,4 +45,4 @@ class AuthenticationService:
         collection = self.collections[user['type']]
 
         mongo = get_mongo_adapter()
-        mongo.delete(collection, user['_id'])
+        return mongo.delete(collection, user['_id'])

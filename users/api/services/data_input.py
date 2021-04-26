@@ -94,6 +94,8 @@ class DataInputService:
             doc['services'] = []
 
     def _validate_fields(self, doc):
+        if not doc:
+            abort(400, extra='At least one field is required for updates!')
         for field in doc:
             if field in self.validations.keys():
                 self.validations[field](doc)
