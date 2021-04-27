@@ -60,6 +60,7 @@ class MongoAdapter:
         """
         filter_ = self._get_id_filter(user_id)
         try:
+            updated = None
             if doc.get('services'):
                 updated = self.db_[collection].find_one_and_update(
                     filter_,
@@ -125,7 +126,7 @@ class MongoAdapter:
             )
 
             if not updated:
-                KeyError('No object found with set name/id')
+                raise KeyError('No object found with set name/id')
 
             updated['_id'] = str(updated['_id'])
             return updated

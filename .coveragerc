@@ -1,6 +1,6 @@
 [run]
 source = users/
-omit = */__init__.py, users/app.py
+omit = */__init__.py, users/app.py, users/api/routes/*
 
 [report]
 fail_under=90
