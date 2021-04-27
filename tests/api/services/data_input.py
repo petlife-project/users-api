@@ -13,57 +13,59 @@ class DataInputServiceTestCase(unittest.TestCase):
         self.patches = []
 
         re_patch = patch('users.api.services.data_input.re')
-        self.mocks['re_mock'] = re_patch.start()
+        self.mocks['re'] = re_patch.start()
         self.patches.append(re_patch)
 
         abort_patch = patch('users.api.services.data_input.abort')
-        self.mocks['abort_mock'] = abort_patch.start()
+        self.mocks['abort'] = abort_patch.start()
         self.patches.append(abort_patch)
 
+        get_jwt_id_patch = patch('users.api.services.data_input.get_jwt_identity')
+        self.mocks['get_jwt_id'] = get_jwt_id_patch.start()
+        self.patches.append(get_jwt_id_patch)
+
         parser_factory_patch = patch('users.api.services.data_input.FACTORY')
-        self.mocks['parser_factory_mock'] = parser_factory_patch.start()
+        self.mocks['parser_factory'] = parser_factory_patch.start()
         self.patches.append(parser_factory_patch)
 
         clients_col_patch = patch('users.api.services.data_input.CLIENTS_COLLECTION',
                                   new='test_clients_col')
-        self.mocks['clients_col_mock'] = clients_col_patch.start()
+        self.mocks['clients_col'] = clients_col_patch.start()
         self.patches.append(clients_col_patch)
 
         shops_col_patch = patch('users.api.services.data_input.SHOPS_COLLECTION',
                                 new='test_shops_col')
-        self.mocks['shops_col_mock'] = shops_col_patch.start()
+        self.mocks['shops_col'] = shops_col_patch.start()
         self.patches.append(shops_col_patch)
 
         jsonify_patch = patch('users.api.services.data_input.jsonify')
-        self.mocks['jsonify_mock'] = jsonify_patch.start()
+        self.mocks['jsonify'] = jsonify_patch.start()
         self.patches.append(jsonify_patch)
 
         cpf_patch = patch('users.api.services.data_input.CPF')
-        self.mocks['cpf_mock'] = cpf_patch.start()
+        self.mocks['cpf'] = cpf_patch.start()
         self.patches.append(cpf_patch)
 
         cnpj_patch = patch('users.api.services.data_input.CNPJ')
-        self.mocks['cnpj_mock'] = cnpj_patch.start()
+        self.mocks['cnpj'] = cnpj_patch.start()
         self.patches.append(cnpj_patch)
 
         mongo_patch = patch('users.api.services.data_input.get_mongo_adapter')
-        self.mocks['mongo_mock'] = mongo_patch.start()
+        self.mocks['mongo'] = mongo_patch.start()
         self.patches.append(mongo_patch)
 
         cos_patch = patch('users.api.services.data_input.get_cos_adapter')
-        self.mocks['cos_mock'] = cos_patch.start()
+        self.mocks['cos'] = cos_patch.start()
         self.patches.append(cos_patch)
 
     def tearDown(self):
         for patch_ in self.patches:
             patch_.stop()
 
-    def test_init_sets_validations(self):
+    def test_init_sets_factory_types_and_validations(self):
         # Setup
         mock_self = MagicMock(
             _validate_email='method1',
-            _validate_pets='method2',
-            _validate_services='method3',
             _validate_pics='method4',
             _validate_cpf='method5',
             _validate_cnpj='method6'
@@ -73,22 +75,31 @@ class DataInputServiceTestCase(unittest.TestCase):
         DataInputService.__init__(mock_self)
 
         # Assert
+        self.assertEqual(
+            mock_self.parser_factory,
+            self.mocks['parser_factory']
+        )
+        self.assertEqual(
+            mock_self.types,
+            {
+                'client': 'test_clients_col',
+                'shop': 'test_shops_col'
+            }
+        )
         self.assertDictEqual(
             mock_self.validations,
             {
                 'email': 'method1',
+                'cpf': 'method5',
+                'cnpj': 'method6',
                 'profile_pic': 'method4',
                 'banner_pic': 'method4'
             }
         )
 
-    @staticmethod
-    def test_register_returns_new_user():
+    def test_register_returns_new_user(self):
         # Setup
-        new_user = {
-            'new': 'user',
-            'right': 'here'
-        }
+        new_user = {'new': 'user', 'right': 'here'}
         mock_self = MagicMock(types={'test_type': 'test_col'})
         mock_self.parser_factory.get_parser.return_value = \
             MagicMock(fields=new_user)
@@ -102,9 +113,30 @@ class DataInputServiceTestCase(unittest.TestCase):
         mock_self._create_array_fields.assert_called_with(
             new_user, 'test_type'
         )
-        mock_self._insert_in_mongo.assert_called_with(
+        self.mocks['mongo'].return_value.create.assert_called_with(
             'test_col', new_user
         )
+        self.mocks['jsonify'].assert_called()
+
+    def test_register_keyerror_abort(self):
+        # Setup
+        new_user = {'new': 'user', 'right': 'here'}
+        mock_self = MagicMock(types={'test_type': 'test_col'})
+        mock_self.parser_factory.get_parser.return_value = \
+            MagicMock(fields=new_user)
+        type_ = 'test_type'
+        self.mocks['mongo'].return_value.create.side_effect = \
+            KeyError
+
+        # Act
+        DataInputService.register(mock_self, type_)
+
+        # Assert
+        mock_self._validate_fields.assert_called_with(new_user)
+        mock_self._create_array_fields.assert_called_with(
+            new_user, 'test_type'
+        )
+        self.mocks['abort'].assert_called()
 
     def test_update_succesful_returns_updated_user(self):
         # Setup
@@ -112,6 +144,7 @@ class DataInputServiceTestCase(unittest.TestCase):
         type_ = 'sftd'
         mock_self.parser_factory.get_parser.return_value = \
             MagicMock(fields={'purple': 'haze'})
+        self.mocks['get_jwt_id'].return_value = {'_id': 'mano'}
 
         # Act
         updated = DataInputService.update(mock_self, type_)
@@ -120,10 +153,34 @@ class DataInputServiceTestCase(unittest.TestCase):
         mock_self.parser_factory.get_parser.assert_called_with(
             'sftd_update'
         )
-        mock_self._update_in_mongo.assert_called_with(
-            'test_col', {'purple': 'haze'}
+        self.mocks['mongo'].return_value.update.assert_called_with(
+            'test_col', {'purple': 'haze'}, 'mano'
         )
-        self.assertEqual(updated, self.mocks['jsonify_mock'].return_value)
+        self.assertEqual(updated, self.mocks['jsonify'].return_value)
+
+    def test_update_key_error_abort_404(self):
+        # Setup
+        mock_self = MagicMock(types={'sftd': 'test_col'})
+        type_ = 'sftd'
+        self.mocks['mongo'].return_value.update.side_effect = KeyError(123)
+
+        # Act
+        DataInputService.update(mock_self, type_)
+
+        # Assert
+        self.mocks['abort'].assert_called_with(404, extra='123')
+
+    def test_update_runtime_error_abort_500(self):
+        # Setup
+        mock_self = MagicMock(types={'sftd': 'test_col'})
+        type_ = 'sftd'
+        self.mocks['mongo'].return_value.update.side_effect = RuntimeError('=[')
+
+        # Act
+        DataInputService.update(mock_self, type_)
+
+        # Assert
+        self.mocks['abort'].assert_called_with(500, extra='Error when updating, =[')
 
     def test_validate_pics_creates_pics_object_inserts_pics(self):
         # Setup
@@ -136,21 +193,21 @@ class DataInputServiceTestCase(unittest.TestCase):
         DataInputService._validate_pics(doc)
 
         # Assert
-        self.mocks['cos_mock'].return_value.upload.assert_has_calls(
+        self.mocks['cos'].return_value.upload.assert_has_calls(
             (call('fotos_da_festa.exe'), call('nao_eh_virus.exe'))
         )
 
     def test_validate_cpf_valid_returns_nothing(self):
         # Setup
         doc = {'cpf': '12345678912'}
-        self.mocks['cpf_mock'].return_value.\
+        self.mocks['cpf'].return_value.\
             validate.return_value = True
 
         # Act
         DataInputService._validate_cpf(doc)
 
         # Assert
-        self.mocks['cpf_mock'].return_value.\
+        self.mocks['cpf'].return_value.\
             validate.assert_called_with(
                 '12345678912'
             )
@@ -158,28 +215,28 @@ class DataInputServiceTestCase(unittest.TestCase):
     def test_validate_cpf_invalid_abort(self):
         # Setup
         doc = {'cpf': '12345678912'}
-        self.mocks['cpf_mock'].return_value.\
+        self.mocks['cpf'].return_value.\
             validate.return_value = False
-        self.mocks['abort_mock'].side_effect = HTTPException
+        self.mocks['abort'].side_effect = HTTPException
 
         # Act & Assert
         with self.assertRaises(HTTPException):
             DataInputService._validate_cpf(doc)
-            self.mocks['abort_mock'].assert_called_with(
+            self.mocks['abort'].assert_called_with(
                 400, extra='Invalid CPF'
             )
 
     def test_validate_cnpj_valid_returns_nothing(self):
         # Setup
         doc = {'cnpj': '12345678912'}
-        self.mocks['cnpj_mock'].return_value.\
+        self.mocks['cnpj'].return_value.\
             validate.return_value = True
 
         # Act
         DataInputService._validate_cnpj(doc)
 
         # Assert
-        self.mocks['cnpj_mock'].return_value.\
+        self.mocks['cnpj'].return_value.\
             validate.assert_called_with(
                 '12345678912'
             )
@@ -187,14 +244,14 @@ class DataInputServiceTestCase(unittest.TestCase):
     def test_validate_cnpj_invalid_abort(self):
         # Setup
         doc = {'cnpj': '12345678912'}
-        self.mocks['cnpj_mock'].return_value.\
+        self.mocks['cnpj'].return_value.\
             validate.return_value = False
-        self.mocks['abort_mock'].side_effect = HTTPException
+        self.mocks['abort'].side_effect = HTTPException
 
         # Act & Assert
         with self.assertRaises(HTTPException):
             DataInputService._validate_cnpj(doc)
-            self.mocks['abort_mock'].assert_called_with(
+            self.mocks['abort'].assert_called_with(
                 400, extra='Invalid CNPJ'
             )
 
@@ -227,16 +284,16 @@ class DataInputServiceTestCase(unittest.TestCase):
         DataInputService._validate_email(doc)
 
         # Assert
-        self.mocks['re_mock'].match.assert_called_with(
+        self.mocks['re'].match.assert_called_with(
             r'\S+@\S+\.\S+', 'holly@la.ca'
         )
-        self.mocks['abort_mock'].assert_not_called()
+        self.mocks['abort'].assert_not_called()
 
     def test_validate_email_bad_abort(self):
         # Setup
         doc = {'email': 'bademail@badserver >('}
-        self.mocks['re_mock'].match.return_value = False
-        self.mocks['abort_mock'].side_effect = HTTPException
+        self.mocks['re'].match.return_value = False
+        self.mocks['abort'].side_effect = HTTPException
 
         # Act & Assert
         with self.assertRaises(HTTPException):

@@ -1,3 +1,4 @@
+# pylint: disable = import-error, inconsistent-return-statements
 import re
 
 from flask_restful import abort

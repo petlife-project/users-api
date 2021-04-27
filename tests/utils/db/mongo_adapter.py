@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, call
 
 from users.utils.db.mongo_adapter import MongoAdapter, DuplicateKeyError, PyMongoError
 
@@ -11,8 +11,12 @@ class MongoAdapterTestCase(unittest.TestCase):
         self.patches = []
         self.mocks = {}
 
+        obj_id_patch = patch('users.utils.db.mongo_adapter.ObjectId')
+        self.mocks['obj_id'] = obj_id_patch.start()
+        self.patches.append(obj_id_patch)
+
         mongo_patch = patch('users.utils.db.mongo_adapter.MongoClient')
-        self.mocks['mongo_mock'] = mongo_patch.start()
+        self.mocks['mongo'] = mongo_patch.start()
         self.patches.append(mongo_patch)
 
         conn_str = patch('users.utils.db.mongo_adapter.MONGO_CONNECTION_STRING',
@@ -21,7 +25,7 @@ class MongoAdapterTestCase(unittest.TestCase):
         self.patches.append(conn_str)
 
         return_doc_patch = patch('users.utils.db.mongo_adapter.ReturnDocument')
-        self.mocks['return_doc_mock'] = return_doc_patch.start()
+        self.mocks['return_doc'] = return_doc_patch.start()
         self.patches.append(return_doc_patch)
 
     def tearDown(self):
@@ -36,7 +40,7 @@ class MongoAdapterTestCase(unittest.TestCase):
         MongoAdapter.__init__(mock_self)
 
         # Assert
-        self.mocks['mongo_mock'].assert_called_with(
+        self.mocks['mongo'].assert_called_with(
             'mock_connection',
             connect=True
         )
@@ -49,21 +53,23 @@ class MongoAdapterTestCase(unittest.TestCase):
             'username': 'unique_user',
             'name': 'chad'
         }
-        mock_self.db_['test'].insert_one.return_value = MagicMock(
-            acknowledged=True
-        )
         mock_self.db_['test'].insert_one.side_effect = doc.update(
-            _id='mongo_created_id'
+            _id='mongo_created_id',
+            password='password_test'
         )
 
         # Act
-        created = MongoAdapter.create(mock_self, collection, doc)
+        MongoAdapter.create(mock_self, collection, doc)
 
         # Assert
         mock_self.db_['test'].insert_one.assert_called_with(
             {'username': 'unique_user', 'name': 'chad', '_id': 'mongo_created_id'}
         )
-        self.assertTrue(created)
+        self.assertEqual(doc, {
+            'username': 'unique_user',
+            'name': 'chad',
+            '_id': 'mongo_created_id'
+        })
 
     def test_create_doc_already_exists(self):
         # Setup
@@ -91,29 +97,38 @@ class MongoAdapterTestCase(unittest.TestCase):
 
         # Assert
         mock_self.db_['test'].find_one_and_update.assert_called_with(
-            {'_id': 'polar_bear'},
+            mock_self._get_id_filter.return_value,
             {'$set': {'test_field': 'new_value'}},
             projection={'password': False},
-            return_document=self.mocks['return_doc_mock'].AFTER
+            return_document=self.mocks['return_doc'].AFTER
         )
 
     def test_update_updating_list_field_updated_document(self):
         # Setup
         mock_self = MagicMock()
         collection = 'test'
-        doc = {'services': 'new_value'}
+        doc = {'services': 'new_service', 'pets': 'new_pet'}
         user_id = 'polar_bear'
+        find_calls = [
+            call(
+                mock_self._get_id_filter.return_value,
+                {'$push': {'services': 'new_service'}},
+                projection={'password': False},
+                return_document=self.mocks['return_doc'].AFTER
+            ),
+            call(
+                mock_self._get_id_filter.return_value,
+                {'$push': {'pets': 'new_pet'}},
+                projection={'password': False},
+                return_document=self.mocks['return_doc'].AFTER
+            )
+        ]
 
         # Act
         MongoAdapter.update(mock_self, collection, doc, user_id)
 
         # Assert
-        mock_self.db_['test'].find_one_and_update.assert_called_with(
-            {'_id': 'polar_bear'},
-            {'$push': {'services': 'new_value'}},
-            projection={'password': False},
-            return_document=self.mocks['return_doc_mock'].AFTER
-        )
+        mock_self.db_['test'].find_one_and_update.assert_has_calls(find_calls)
 
     def test_update_document_not_found_no_update_raises_key_error(self):
         # Arrange
@@ -121,7 +136,6 @@ class MongoAdapterTestCase(unittest.TestCase):
         collection = 'test'
         doc = {}
         user_id = 'polar_bear'
-        mock_self.db_['test'].find_one_and_update.return_value = None
 
         # Act & Assert
         with self.assertRaises(KeyError):
@@ -139,21 +153,80 @@ class MongoAdapterTestCase(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             MongoAdapter.update(mock_self, collection, doc, user_id)
 
-    def test_delete_successful_run_deleted_document(self):
+    def test_remove_removes_service_updated_document(self):
+        # Setup
+        mock_self = MagicMock()
+        collection = 'test'
+        doc = {'service_id': 'some_id'}
+        user_id = 'polar_bear'
+
+        # Act
+        MongoAdapter.remove(mock_self, collection, doc, user_id)
+
+        # Assert
+        mock_self.db_['test'].find_one_and_update.assert_called_with(
+            mock_self._get_id_filter.return_value,
+            {'$pull': {'services': {'service_id': 'some_id'}}},
+            projection={'password': False},
+            return_document=self.mocks['return_doc'].AFTER
+        )
+
+    def test_remove_removes_pet_updated_document(self):
+        # Setup
+        mock_self = MagicMock()
+        collection = 'test'
+        doc = {'pet_name': 'some_name'}
+        user_id = 'polar_bear'
+
+        # Act
+        MongoAdapter.remove(mock_self, collection, doc, user_id)
+
+        # Assert
+        mock_self.db_['test'].find_one_and_update.assert_called_with(
+            mock_self._get_id_filter.return_value,
+            {'$pull': {'pets': {'name': 'some_name'}}},
+            projection={'password': False},
+            return_document=self.mocks['return_doc'].AFTER
+        )
+
+    def test_remove_not_found_no_update_raises_key_error(self):
+        # Arrange
+        mock_self = MagicMock()
+        collection = 'test'
+        doc = {'service_id': 'test_id'}
+        user_id = 'polar_bear'
+        mock_self.db_['test'].find_one_and_update.return_value = None
+
+        # Act & Assert
+        with self.assertRaises(KeyError):
+            MongoAdapter.remove(mock_self, collection, doc, user_id)
+
+    def test_remove_unexpected_error_raises_runtime_error(self):
+        # Arrange
+        mock_self = MagicMock()
+        collection = 'test'
+        doc = {'service_id': 'test_id'}
+        user_id = 'polar_bear'
+        mock_self.db_['test'].find_one_and_update.side_effect = PyMongoError()
+
+        # Act & Assert
+        with self.assertRaises(RuntimeError):
+            MongoAdapter.remove(mock_self, collection, doc, user_id)
+
+    @staticmethod
+    def test_delete_successful_run_deleted_document():
         # Setup
         mock_self = MagicMock()
         collection = 'test'
         user_id = 'polar_bear'
-        mock_self.db_['test'].delete_one.return_value = MagicMock(
-            acknowledged=True
-        )
 
         # Act
-        deleted = MongoAdapter.delete(mock_self, collection, user_id)
+        MongoAdapter.delete(mock_self, collection, user_id)
 
         # Assert
-        mock_self.db_['test'].delete_one.assert_called_with({'_id': 'polar_bear'})
-        self.assertTrue(deleted)
+        mock_self.db_['test'].delete_one.assert_called_with(
+            mock_self._get_id_filter.return_value
+        )
 
     def test_delete_except_pymongoerror(self):
         # Setup
@@ -166,65 +239,71 @@ class MongoAdapterTestCase(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             MongoAdapter.delete(mock_self, collection, user_id)
 
-    def test_remove_service_removes_from_list_updated_document(self):
+    def test_get_user_by_username_found_user_returns_it(self):
         # Setup
         mock_self = MagicMock()
-        collection = 'test'
-        doc = {'service_id': 'some_id'}
-        user_id = 'polar_bear'
-        mock_self.db_['test'].find_one_and_update.return_value = {
-            '_id': 'user_id'
+        collection = 'test_col'
+        username = 'user'
+        password = 'password'
+        mock_self.db_['test_col'].find_one.return_value = {
+            '_id': 1234,
+            'other': 'fields'
         }
 
         # Act
-        result = MongoAdapter.remove_service(mock_self, collection, doc, user_id)
+        user = MongoAdapter.get_user_by_username(mock_self, collection, username, password)
 
         # Assert
-        mock_self.db_['test'].find_one_and_update.assert_called_with(
-            {'_id': 'polar_bear'},
-            {'$pull': {'services': {'service_id': 'some_id'}}},
-            projection={'password': False},
-            return_document=self.mocks['return_doc_mock'].AFTER
-        )
-        self.assertEqual(result, {'_id': 'user_id'})
+        self.assertEqual(user, {'_id': '1234', 'other': 'fields'})
 
-    def test_remove_service_not_found_no_update_raises_key_error(self):
-        # Arrange
+    def test_get_user_by_username_not_found_raises_keyerror(self):
+        # Setup
         mock_self = MagicMock()
-        collection = 'test'
-        doc = {'service_id': 'test_id'}
-        user_id = 'polar_bear'
-        mock_self.db_['test'].find_one_and_update.return_value = None
+        collection = 'test_col'
+        username = 'user'
+        password = 'password'
+        mock_self.db_['test_col'].find_one.return_value = None
 
         # Act & Assert
         with self.assertRaises(KeyError):
-            MongoAdapter.remove_service(mock_self, collection, doc, user_id)
+            MongoAdapter.get_user_by_username(mock_self, collection, username, password)
 
-    def test_remove_service_unexpected_error_raises_runtime_error(self):
-        # Arrange
+    def test_get_users_returns_list(self):
+        # Setup
         mock_self = MagicMock()
-        collection = 'test'
-        doc = {'service_id': 'test_id'}
-        user_id = 'polar_bear'
-        mock_self.db_['test'].find_one_and_update.side_effect = PyMongoError()
-
-        # Act & Assert
-        with self.assertRaises(RuntimeError):
-            MongoAdapter.remove_service(mock_self, collection, doc, user_id)
-
-    def test_get_users_calls_find_returns_shops_list(self):
-        # Arrange
-        mock_self = MagicMock()
-        collection = 'test'
-        mock_self.db_['test'].find.return_value = [
-            {'_id': 1}, {'_id': 2}
+        collection = 'test_col'
+        mock_self.db_['test_col'].find.return_value = [
+            {'_id': 123},
+            {'_id': 456},
+            {'_id': 789}
         ]
 
         # Act
-        results = MongoAdapter.get_users(mock_self, collection)
+        list_ = MongoAdapter.get_users(mock_self, collection)
 
         # Assert
-        self.assertEqual(results, [
-            {'_id': '1'},
-            {'_id': '2'}
+        self.assertEqual(list_, [
+            {'_id': '123'},
+            {'_id': '456'},
+            {'_id': '789'}
         ])
+
+    def test_get_users_nothing_found_raises_keyerror(self):
+        # Setup
+        mock_self = MagicMock()
+        collection = 'test_col'
+        mock_self.db_['test_col'].find.return_value = []
+
+        # Act & Assert
+        with self.assertRaises(KeyError):
+            MongoAdapter.get_users(mock_self, collection)
+
+    def test_get_id_filter_returns_obj_id_in_dict(self):
+        # Setup
+        user_id = 'user_id'
+
+        # Act
+        id_filter = MongoAdapter._get_id_filter(user_id)
+
+        # Assert
+        self.assertEqual(id_filter, {'_id': self.mocks['obj_id']()})
