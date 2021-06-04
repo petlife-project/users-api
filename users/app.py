@@ -14,11 +14,13 @@ from users.api.routes.clients import Clients
 from users.api.routes.shops import Shops
 from users.api.routes.auth import Auth
 
-from users.utils.env_vars import JWT_SECRET, JWT_TOKEN_TTL
+from users.utils.env_vars import JWT_PRIVATE_PEM, JWT_TOKEN_TTL,\
+    JWT_ALGORITHM, JWT_PUBLIC_PEM
 
 APP = Flask(__name__)
-
-APP.config['JWT_SECRET_KEY'] = JWT_SECRET
+APP.config['JWT_ALGORITHM'] = JWT_ALGORITHM
+APP.config['JWT_PRIVATE_KEY'] = JWT_PRIVATE_PEM
+APP.config['JWT_PUBLIC_KEY'] = JWT_PUBLIC_PEM
 APP.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=JWT_TOKEN_TTL)
 JWTManager(APP)
 

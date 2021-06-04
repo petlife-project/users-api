@@ -9,3 +9,4 @@ pymongo==3.11.0
 validate_docbr==1.7.0
 Flask_JWT_Extended==3.24.1
 PyJWT==1.7.1
+cryptography==3.4.7
