@@ -9,7 +9,7 @@ AUTH_FIELDS = [
 ]
 
 
-SHOPS_UPDATE_FIELDS = [
+SHOP_UPDATE_FIELDS = [
     {'name': 'email', 'type': str, 'location': 'json', 'required': False,
      'store_missing': False},
     {'name': 'address', 'type': str, 'location': 'json', 'required': False,
@@ -29,7 +29,7 @@ SHOPS_UPDATE_FIELDS = [
 ]
 
 
-CLIENTS_UPDATE_FIELDS = [
+CLIENT_UPDATE_FIELDS = [
     {'name': 'name', 'type': str, 'location': 'json', 'required': False, 'store_missing': False},
     {'name': 'email', 'type': str, 'location': 'json', 'required': False, 'store_missing': False},
     {'name': 'address', 'type': str, 'location': 'json', 'required': False, 'store_missing': False},
@@ -39,7 +39,7 @@ CLIENTS_UPDATE_FIELDS = [
 ]
 
 
-SHOPS_REGISTRATION_FIELDS = [
+SHOP_REGISTRATION_FIELDS = [
     {'name': 'username', 'type': str, 'location': 'json', 'required': True},
     {'name': 'password', 'type': str, 'location': 'json', 'required': True},
     {'name': 'name', 'type': str, 'location': 'json', 'required': True},
@@ -50,7 +50,7 @@ SHOPS_REGISTRATION_FIELDS = [
 ]
 
 
-CLIENTS_REGISTRATION_FIELDS = [
+CLIENT_REGISTRATION_FIELDS = [
     {'name': 'username', 'type': str, 'location': 'json', 'required': True},
     {'name': 'password', 'type': str, 'location': 'json', 'required': True},
     {'name': 'name', 'type': str, 'location': 'json', 'required': True},

@@ -1,7 +1,7 @@
 from users.api.body_parsers.parser import BodyParser
 from users.api.body_parsers.fields import AUTH_FIELDS, \
-    CLIENTS_REGISTRATION_FIELDS, CLIENTS_UPDATE_FIELDS, PET_REMOVAL, \
-    SHOPS_REGISTRATION_FIELDS, SHOPS_UPDATE_FIELDS, \
+    CLIENT_REGISTRATION_FIELDS, CLIENT_UPDATE_FIELDS, PET_REMOVAL, \
+    SHOP_REGISTRATION_FIELDS, SHOP_UPDATE_FIELDS, \
     SERVICE_REMOVAL
 
 
@@ -12,10 +12,10 @@ class BodyParserFactory:
     def __init__(self):
         self.types = {
             'auth': AUTH_FIELDS,
-            'client_registration': CLIENTS_REGISTRATION_FIELDS,
-            'shop_registration': SHOPS_REGISTRATION_FIELDS,
-            'client_update': CLIENTS_UPDATE_FIELDS,
-            'shop_update': SHOPS_UPDATE_FIELDS,
+            'client_registration': CLIENT_REGISTRATION_FIELDS,
+            'shop_registration': SHOP_REGISTRATION_FIELDS,
+            'client_update': CLIENT_UPDATE_FIELDS,
+            'shop_update': SHOP_UPDATE_FIELDS,
             'service_removal': SERVICE_REMOVAL,
             'pet_removal': PET_REMOVAL
         }
