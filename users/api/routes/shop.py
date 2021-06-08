@@ -3,24 +3,31 @@ from flask_jwt_extended import jwt_required
 
 from users.api.services.data_input import DataInputService
 from users.api.services.removal import RemovalService
+from users.api.services.get_all import GetAllService
 
 
-class Clients(Resource):
-    """ For registering and updating clients' data."""
+class Shop(Resource):
+    """ For registering and updating shop data."""
+
+    @staticmethod
+    @jwt_required
+    def get():
+        service = GetAllService()
+        return service.get()
 
     @staticmethod
     def post():
         service = DataInputService()
-        return service.register('client')
+        return service.register('shop')
 
     @staticmethod
     @jwt_required
     def put():
         service = DataInputService()
-        return service.update('client')
+        return service.update('shop')
 
     @staticmethod
     @jwt_required
     def delete():
         service = RemovalService()
-        return service.remove('client')
+        return service.remove('shop')

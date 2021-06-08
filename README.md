@@ -120,7 +120,7 @@ Invalid user information
 ```
 
 ## Client Registration ##
-`POST /clients`
+`POST /client`
 
 *Request body:*
 JSON
@@ -175,7 +175,7 @@ Invalid CPF
 
 *protected*
 
-`PUT /clients`
+`PUT /client`
 
 *Request header*
 
@@ -241,7 +241,7 @@ Incorrect username or password
 
 *protected*
 
-`DELETE /clients?pet_name=<exact-match>`
+`DELETE /client?pet_name=<exact-match>`
 
 *Request header*
 
@@ -280,7 +280,7 @@ Returns updated user object (except password)
 Returns a bad request code if the pet name sent is not found on the user
 
 ## Shop Registration ##
-`POST /shops`
+`POST /shop`
 
 *Request body:*
 JSON
@@ -334,7 +334,7 @@ Invalid CNPJ
 
 *protected*
 
-`PUT /shops`
+`PUT /shop`
 
 *Request header*
 
@@ -409,7 +409,7 @@ Incorrect username or password
 
 *protected*
 
-`DELETE /shops?service_id=<exact-match>`
+`DELETE /shop?service_id=<exact-match>`
 
 *Request header*
 

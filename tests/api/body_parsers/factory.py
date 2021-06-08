@@ -22,25 +22,25 @@ class BodyParserFactoryTestCase(unittest.TestCase):
         self.patches.append(auth_fields_patch)
 
         clients_reg_fields_patch = patch(
-            'users.api.body_parsers.factory.CLIENTS_REGISTRATION_FIELDS', new='client reg fields'
+            'users.api.body_parsers.factory.CLIENT_REGISTRATION_FIELDS', new='client reg fields'
         )
         self.mocks['clients_reg_fields'] = clients_reg_fields_patch.start()
         self.patches.append(clients_reg_fields_patch)
 
         clients_up_fields_patch = patch(
-            'users.api.body_parsers.factory.CLIENTS_UPDATE_FIELDS', new='client up fields'
+            'users.api.body_parsers.factory.CLIENT_UPDATE_FIELDS', new='client up fields'
         )
         self.mocks['clients_up_fields'] = clients_up_fields_patch.start()
         self.patches.append(clients_up_fields_patch)
 
         shops_reg_fields_patch = patch(
-            'users.api.body_parsers.factory.SHOPS_REGISTRATION_FIELDS', new='shops reg fields'
+            'users.api.body_parsers.factory.SHOP_REGISTRATION_FIELDS', new='shops reg fields'
         )
         self.mocks['shops_reg_fields'] = shops_reg_fields_patch.start()
         self.patches.append(shops_reg_fields_patch)
 
         shops_up_fields_patch = patch(
-            'users.api.body_parsers.factory.SHOPS_UPDATE_FIELDS', new='shops up fields'
+            'users.api.body_parsers.factory.SHOP_UPDATE_FIELDS', new='shops up fields'
         )
         self.mocks['shops_up_fields'] = shops_up_fields_patch.start()
         self.patches.append(shops_up_fields_patch)
